@@ -1,3 +1,45 @@
+// Función para mostrar feedback
+function showFeedback(message, success = true) {
+    const feedback = document.createElement('div');
+    feedback.textContent = message;
+    feedback.className = success ? 'feedback success' : 'feedback error';
+
+    document.body.appendChild(feedback);
+    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
+}
+
+// Función para cargar contactos desde el backend
+async function loadContacts() {
+    try {
+        const response = await fetch('/contacts');
+        if (response.ok) {
+            const contacts = await response.json();
+            const tableBody = document.querySelector('#contactList tbody');
+            tableBody.innerHTML = ''; // Limpia el contenido actual
+
+            contacts.forEach(contact => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${contact.nombre}</td>
+                    <td>${contact.telefono}</td>
+                    <td>${contact.email}</td>
+                    <td>${contact.notas}</td>
+                    <td>
+                        <button onclick="editContact(${contact.id})">Editar</button>
+                        <button onclick="deleteContact(${contact.id})">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            showFeedback('Error al cargar contactos', false);
+        }
+    } catch (err) {
+        showFeedback(`Error de conexión: ${err.message}`, false);
+    }
+}
+
+// Agregar un contacto
 document.getElementById('contactForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -16,9 +58,13 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 
     if (response.ok) {
         loadContacts();
+        showFeedback('Contacto agregado correctamente');
+    } else {
+        showFeedback('Error al agregar contacto', false);
     }
 });
 
+// Editar un contacto
 document.getElementById('editForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -38,79 +84,47 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
 
     if (response.ok) {
         loadContacts();
+        showFeedback('Contacto actualizado correctamente');
         document.getElementById('editForm').style.display = 'none';
         document.getElementById('contactForm').style.display = 'block';
+    } else {
+        showFeedback('Error al actualizar contacto', false);
     }
 });
 
-async function loadContacts() {
-    const response = await fetch('/contacts');
-    const contacts = await response.json();
-    const tableBody = document.querySelector('#contactList tbody');
-    tableBody.innerHTML = '';
-    contacts.forEach(contact => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${contact.nombre}</td>
-            <td>${contact.telefono}</td>
-            <td>${contact.email}</td>
-            <td>${contact.notas}</td>
-            <td>
-                <button onclick="editContact(${contact.id})">Editar</button>
-                <button onclick="deleteContact(${contact.id})">Eliminar</button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-async function editContact(id) {
-    const response = await fetch(`/contacts/${id}`);
-    const contact = await response.json();
-
-    // Cargar los datos del contacto en el formulario de edición
-    document.getElementById('editForm').dataset.id = contact.id;
-    document.getElementById('editNombre').value = contact.nombre;
-    document.getElementById('editTelefono').value = contact.telefono;
-    document.getElementById('editEmail').value = contact.email;
-    document.getElementById('editNotas').value = contact.notas;
-
-    // Mostrar el formulario de edición y ocultar el de agregar
-    document.getElementById('contactForm').style.display = 'none';
-    document.getElementById('editForm').style.display = 'block';
-}
-
+// Eliminar un contacto
 async function deleteContact(id) {
     const response = await fetch(`/delete/${id}`, { method: 'DELETE' });
     if (response.ok) {
         loadContacts();
+        showFeedback('Contacto eliminado correctamente');
+    } else {
+        showFeedback('Error al eliminar contacto', false);
     }
 }
-// Función para cargar contactos desde el backend
-async function fetchContacts() {
-    const response = await fetch('/contacts'); // Solicita los contactos al backend
-    const contacts = await response.json();   // Convierte la respuesta a JSON
-    const tableBody = document.querySelector('#contactList tbody'); // Selecciona la tabla
 
-    tableBody.innerHTML = ''; // Limpia el contenido actual
+// Editar un contacto (mostrar en el formulario)
+async function editContact(id) {
+    const response = await fetch(`/contacts/${id}`);
+    if (response.ok) {
+        const contact = await response.json();
 
-    contacts.forEach(contact => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${contact.nombre}</td>
-            <td>${contact.telefono}</td>
-            <td>${contact.email}</td>
-            <td>${contact.notas}</td>
-            <td>
-                <button onclick="editContact(${contact.id})">Editar</button>
-                <button onclick="deleteContact(${contact.id})">Eliminar</button>
-            </td>
-        `;
-        tableBody.appendChild(row); // Añade la fila a la tabla
-    });
+        // Cargar los datos del contacto en el formulario de edición
+        document.getElementById('editForm').dataset.id = contact.id;
+        document.getElementById('editNombre').value = contact.nombre;
+        document.getElementById('editTelefono').value = contact.telefono;
+        document.getElementById('editEmail').value = contact.email;
+        document.getElementById('editNotas').value = contact.notas;
+
+        // Mostrar el formulario de edición y ocultar el de agregar
+        document.getElementById('contactForm').style.display = 'none';
+        document.getElementById('editForm').style.display = 'block';
+    } else {
+        showFeedback('Error al cargar datos del contacto', false);
+    }
 }
 
-// Llamar a fetchContacts al cargar la página
+// Cargar contactos al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
-    fetchContacts(); // Carga la lista de contactos al abrir la página
+    loadContacts();
 });

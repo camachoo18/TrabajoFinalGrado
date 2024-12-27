@@ -64,3 +64,35 @@ td button {
 td button:hover {
     background-color: #e60000;
 }
+.feedback {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: white;
+    font-size: 14px;
+    z-index: 1000;
+    animation: fadeOut 3s forwards;
+}
+
+.feedback.success {
+    background-color: #28a745;
+}
+
+.feedback.error {
+    background-color: #dc3545;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
