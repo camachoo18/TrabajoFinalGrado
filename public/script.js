@@ -68,12 +68,14 @@ async function editContact(id) {
     const response = await fetch(`/contacts/${id}`);
     const contact = await response.json();
 
+    // Cargar los datos del contacto en el formulario de edición
     document.getElementById('editForm').dataset.id = contact.id;
     document.getElementById('editNombre').value = contact.nombre;
     document.getElementById('editTelefono').value = contact.telefono;
     document.getElementById('editEmail').value = contact.email;
     document.getElementById('editNotas').value = contact.notas;
 
+    // Mostrar el formulario de edición y ocultar el de agregar
     document.getElementById('contactForm').style.display = 'none';
     document.getElementById('editForm').style.display = 'block';
 }
@@ -84,5 +86,3 @@ async function deleteContact(id) {
         loadContacts();
     }
 }
-
-window.onload = loadContacts;
