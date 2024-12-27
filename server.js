@@ -2,11 +2,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors = require('cors');  // Agregar cors
 const db = require('./database'); // Importar el módulo de la base de datos
 
 // Configurar el servidor
 const app = express();
 const PORT = 3000;
+
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -24,9 +27,10 @@ app.post('/add', (req, res) => {
         if (err) {
             return res.status(500).json({ message: 'Error al agregar el contacto.', error: err.message });
         }
-        res.status(201).json({ message: 'Contacto agregado exitosamente.', contacto });
+        res.status(201).json({ message: 'Contacto agregado exitosamente.', contacto });  // Asegúrate de enviar el contacto agregado
     });
 });
+
 
 // Endpoint para obtener la lista de contactos
 app.get('/contacts', (req, res) => {
