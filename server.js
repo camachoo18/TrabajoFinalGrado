@@ -9,14 +9,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta para obtener todos los contactos
 app.get('/contacts', (req, res) => {
-    db.all('SELECT * FROM contacts', [], (err, rows) => {
+    const query = 'SELECT * FROM contacts';
+    db.all(query, [], (err, rows) => {
         if (err) {
-            res.status(500).json({ error: err.message });
+            console.error(err.message);
+            res.status(500).send('Error al obtener los contactos.');
         } else {
-            res.json(rows);
+            res.json(rows); // Devuelve la lista de contactos al frontend
         }
     });
 });
+
 
 // Ruta para agregar un nuevo contacto
 app.post('/add', (req, res) => {

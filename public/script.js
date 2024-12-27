@@ -86,3 +86,31 @@ async function deleteContact(id) {
         loadContacts();
     }
 }
+// Función para cargar contactos desde el backend
+async function fetchContacts() {
+    const response = await fetch('/contacts'); // Solicita los contactos al backend
+    const contacts = await response.json();   // Convierte la respuesta a JSON
+    const tableBody = document.querySelector('#contactList tbody'); // Selecciona la tabla
+
+    tableBody.innerHTML = ''; // Limpia el contenido actual
+
+    contacts.forEach(contact => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${contact.nombre}</td>
+            <td>${contact.telefono}</td>
+            <td>${contact.email}</td>
+            <td>${contact.notas}</td>
+            <td>
+                <button onclick="editContact(${contact.id})">Editar</button>
+                <button onclick="deleteContact(${contact.id})">Eliminar</button>
+            </td>
+        `;
+        tableBody.appendChild(row); // Añade la fila a la tabla
+    });
+}
+
+// Llamar a fetchContacts al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    fetchContacts(); // Carga la lista de contactos al abrir la página
+});
