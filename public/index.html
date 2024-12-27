@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Contactos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agenda de Contactos</h1>
+
+    <!-- Formulario para agregar contacto -->
+    <form id="addContactForm">
+        <input type="text" id="nombre" placeholder="Nombre" required />
+        <input type="text" id="telefono" placeholder="Teléfono" required />
+        <input type="email" id="correo" placeholder="Correo" required />
+        <input type="text" id="notas" placeholder="Notas" />
+        <button type="submit">Añadir Contacto</button>
+    </form>
+
+    <h2>Lista de Contactos</h2>
+    <!-- Tabla para mostrar contactos -->
+    <table id="contactsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const addContactForm = document.getElementById('addContactForm');
+        const contactsTable = document.getElementById('contactsTable').querySelector('tbody');
+
+        // Función para cargar contactos
+        async function loadContacts() {
+            const response = await fetch('/contacts');
+            const contacts = await response.json();
+            contactsTable.innerHTML = '';
+            contacts.forEach(contact => {
+                const row = `
+                    <tr>
+                        <td>${contact.id}</td>
+                        <td>${contact.nombre}</td>
+                        <td>${contact.telefono}</td>
+                        <td>${contact.correo}</td>
+                        <td>${contact.notas}</td>
+                        <td>
+                            <button onclick="deleteContact(${contact.id})">Eliminar</button>
+                            <button onclick="editContact(${contact.id}, '${contact.nombre}', '${contact.telefono}', '${contact.correo}', '${contact.notas}')">Editar</button>
+                        </td>
+                    </tr>
+                `;
+                contactsTable.innerHTML += row;
+            });
+        }
+
+        // Función para añadir contacto
+        addContactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const telefono = document.getElementById('telefono').value;
+            const correo = document.getElementById('correo').value;
+            const notas = document.getElementById('notas').value;
+
+            await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, telefono, correo, notas }),
+            });
+
+            addContactForm.reset();
+            loadContacts();
+        });
+
+        // Función para eliminar contacto
+        async function deleteContact(id) {
+            await fetch(`/delete/${id}`, { method: 'DELETE' });
+            loadContacts();
+        }
+
+        // Función para editar contacto
+        async function editContact(id, nombre, telefono, correo, notas) {
+            const newNombre = prompt("Editar nombre:", nombre) || nombre;
+            const newTelefono = prompt("Editar teléfono:", telefono) || telefono;
+            const newCorreo = prompt("Editar correo:", correo) || correo;
+            const newNotas = prompt("Editar notas:", notas) || notas;
+
+            await fetch(`/edit/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: newNombre, telefono: newTelefono, correo: newCorreo, notas: newNotas }),
+            });
+
+            loadContacts();
+        }
+
+        // Cargar contactos al inicio
+        loadContacts();
+    </script>
+</body>
+</html>
