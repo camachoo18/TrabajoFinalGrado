@@ -51,6 +51,7 @@ app.delete('/delete/:id', (req, res) => {
 app.put('/edit/:id', (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, notas } = req.body;
+
     const stmt = db.prepare('UPDATE contacts SET nombre = ?, telefono = ?, email = ?, notas = ? WHERE id = ?');
     stmt.run(nombre, telefono, email, notas, id, function(err) {
         if (err) {
@@ -60,6 +61,7 @@ app.put('/edit/:id', (req, res) => {
         }
     });
 });
+
 // Ruta para obtener un contacto específico por ID
 app.get('/contacts/:id', (req, res) => {
     const { id } = req.params;
