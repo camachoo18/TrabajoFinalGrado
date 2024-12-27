@@ -1,64 +1,30 @@
-//const bcrypt = require('bcrypt');
-const saltRounds = 10;
-const Database = require('better-sqlite3');
-const fs = require('fs');
-const crypto = require('crypto');
+const sqlite3 = require('sqlite3').verbose();
 
-let db_aux = null;
-if (!fs.existsSync('agenda.db')) {
-    db_aux = new Database('agenda.db');
-    db_aux.exec(`CREATE TABLE contactos (
+// Crear o abrir la base de datos SQLite
+const db = new sqlite3.Database('contacts.db', (err) => {
+    if (err) {
+        console.error('Error al conectar a la base de datos:', err.message);
+    } else {
+        console.log('Conectado a la base de datos SQLite.');
+    }
+});
+
+// Crear la tabla de contactos si no existe
+db.run(`
+    CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
-        telefono TEXT NOT NULL,
-        correo TEXT NOT NULL,
+        telefono TEXT,
+        email TEXT,
         notas TEXT
-    )`);
-    console.log("Base de datos creada.");
-} else {
-    db_aux = new Database('agenda.db');
-    console.log("Base de datos cargada.");
-}
+    );
+`, (err) => {
+    if (err) {
+        console.error('Error al crear la tabla:', err.message);
+    } else {
+        console.log('Tabla de contactos creada (o ya existe).');
+    }
+});
 
-const db = db_aux;
-
-// Operaciones CRUD para contactos
-
-// Agregar contacto
-function agregarContacto(nombre, telefono, correo, notas) {
-    const query = `INSERT INTO contactos (nombre, telefono, correo, notas) VALUES (?, ?, ?, ?)`;
-    const statement = db.prepare(query);
-    const result = statement.run(nombre, telefono, correo, notas || '');
-    return { id: result.lastInsertRowid, nombre, telefono, correo, notas };
-}
-
-// Obtener contactos
-function obtenerContactos() {
-    const query = `SELECT * FROM contactos`;
-    const statement = db.prepare(query);
-    return statement.all();
-}
-
-// Editar contacto
-function editarContacto(id, nombre, telefono, correo, notas) {
-    const query = `UPDATE contactos SET nombre = ?, telefono = ?, correo = ?, notas = ? WHERE id = ?`;
-    const statement = db.prepare(query);
-    const result = statement.run(nombre, telefono, correo, notas, id);
-    return result.changes;
-}
-
-// Eliminar contacto
-function eliminarContacto(id) {
-    const query = `DELETE FROM contactos WHERE id = ?`;
-    const statement = db.prepare(query);
-    const result = statement.run(id);
-    return result.changes;
-}
-
-// Exportar funciones
-module.exports = {
-    agregarContacto,
-    obtenerContactos,
-    editarContacto,
-    eliminarContacto
-};
+// Exportar la base de datos para usarla en otros archivos
+module.exports = db;

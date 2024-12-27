@@ -1,79 +1,68 @@
-// server.js: Configuración del servidor y endpoints
 const express = require('express');
-const bodyParser = require('body-parser');
 const path = require('path');
-const cors = require('cors');  // Agregar cors
-const db = require('./database'); // Importar el módulo de la base de datos
-
-// Configurar el servidor
+const db = require('./database'); // Importa la base de datos desde el archivo database.js
 const app = express();
-const PORT = 3000;
+const port = 3000;
 
-app.use(cors());
-
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware
-app.use(bodyParser.json()); // Para manejar JSON en las solicitudes
-
-// Endpoint para agregar un contacto
-app.post('/add', (req, res) => {
-    const { nombre, telefono, correo, notas } = req.body;
-    if (!nombre || !telefono || !correo) {
-        return res.status(400).json({ message: 'Nombre, teléfono y correo son obligatorios.' });
-    }
-
-    db.agregarContacto(nombre, telefono, correo, notas, (err, contacto) => {
-        if (err) {
-            return res.status(500).json({ message: 'Error al agregar el contacto.', error: err.message });
-        }
-        res.status(201).json({ message: 'Contacto agregado exitosamente.', contacto });  // Asegúrate de enviar el contacto agregado
-    });
-});
-
-
-// Endpoint para obtener la lista de contactos
+// Ruta para obtener todos los contactos
 app.get('/contacts', (req, res) => {
-    db.obtenerContactos((err, contactos) => {
+    db.all('SELECT * FROM contacts', [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ message: 'Error al obtener los contactos.', error: err.message });
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json(rows);
         }
-        res.json(contactos);
     });
 });
 
-// Endpoint para editar un contacto
-app.put('/edit/:id', (req, res) => {
-    const { id } = req.params;
-    const { nombre, telefono, correo, notas } = req.body;
-
-    db.editarContacto(id, nombre, telefono, correo, notas, (err, cambios) => {
+// Ruta para agregar un nuevo contacto
+app.post('/add', (req, res) => {
+    const { nombre, telefono, email, notas } = req.body;
+    const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas) VALUES (?, ?, ?, ?)');
+    stmt.run(nombre, telefono, email, notas, function(err) {
         if (err) {
-            return res.status(500).json({ message: 'Error al actualizar el contacto.', error: err.message });
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(200).json({ id: this.lastID });
         }
-        if (cambios === 0) {
-            return res.status(404).json({ message: 'Contacto no encontrado.' });
-        }
-        res.json({ message: 'Contacto actualizado exitosamente.' });
     });
 });
 
-// Endpoint para eliminar un contacto
+// Ruta para eliminar un contacto
 app.delete('/delete/:id', (req, res) => {
     const { id } = req.params;
-
-    db.eliminarContacto(id, (err, cambios) => {
+    const stmt = db.prepare('DELETE FROM contacts WHERE id = ?');
+    stmt.run(id, function(err) {
         if (err) {
-            return res.status(500).json({ message: 'Error al eliminar el contacto.', error: err.message });
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(200).json({ message: 'Contacto eliminado' });
         }
-        if (cambios === 0) {
-            return res.status(404).json({ message: 'Contacto no encontrado.' });
-        }
-        res.json({ message: 'Contacto eliminado exitosamente.' });
     });
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+// Ruta para editar un contacto
+app.put('/edit/:id', (req, res) => {
+    const { id } = req.params;
+    const { nombre, telefono, email, notas } = req.body;
+    const stmt = db.prepare('UPDATE contacts SET nombre = ?, telefono = ?, email = ?, notas = ? WHERE id = ?');
+    stmt.run(nombre, telefono, email, notas, id, function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(200).json({ message: 'Contacto actualizado' });
+        }
+    });
+});
+
+// Servir la página HTML
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(port, () => {
+    console.log(`Servidor corriendo en http://localhost:${port}`);
 });
