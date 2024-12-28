@@ -89,8 +89,8 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 
     // Verificar si el teléfono ya está registrado
     if (await isDuplicatePhone(telefono)) {
-        showFeedback('El número de teléfono ya está registrado.');
-        return;
+        showFeedback('El número de teléfono ya está registrado.', false); // Mostrar mensaje de error
+        return; // Detener la ejecución del resto de la función
     }
 
     const contact = { nombre, telefono, email, notas };
@@ -110,8 +110,8 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
         console.log('Error al agregar contacto:', responseBody);  // Log del error
         showFeedback(responseBody.error || 'Error al agregar contacto', false); // Mostrar mensaje de error
     }
-    
 });
+
 
 
 // Eliminar un contacto

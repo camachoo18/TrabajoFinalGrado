@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
@@ -28,6 +28,20 @@ input, textarea {
     padding: 10px;
     font-size: 16px;
     width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+input::placeholder, textarea::placeholder {
+    color: #aaa;
+    font-style: italic;
 }
 
 button {
@@ -36,16 +50,21 @@ button {
     padding: 10px;
     font-size: 16px;
     border: none;
+    border-radius: 4px;
     cursor: pointer;
 }
 
-button:hover {
+button:hover, button:focus {
     background-color: #45a049;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.6);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 th, td {
@@ -58,12 +77,20 @@ td button {
     background-color: #f44336;
     color: white;
     border: none;
+    border-radius: 4px;
     cursor: pointer;
 }
 
-td button:hover {
+td button:hover, td button:focus {
     background-color: #e60000;
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
 }
+
+table tr:hover {
+    background-color: #f1f1f1;
+}
+
 .feedback {
     position: fixed;
     top: 10px;
@@ -74,6 +101,17 @@ td button:hover {
     font-size: 14px;
     z-index: 1000;
     animation: fadeOut 3s forwards;
+    transform: translateX(100%);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.feedback.success, .feedback.error {
+    transform: translateX(0);
+}
+
+.feedback.fade-out {
+    opacity: 0;
+    transform: translateX(100%);
 }
 
 .feedback.success {
@@ -96,3 +134,21 @@ td button:hover {
     }
 }
 
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 10px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    input, textarea, button {
+        font-size: 14px;
+    }
+
+    button {
+        padding: 8px;
+    }
+}
