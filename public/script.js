@@ -42,12 +42,14 @@ async function loadContacts() {
                 // Botón de editar
                 const editButton = document.createElement('button');
                 editButton.textContent = 'Editar';
+                editButton.className = 'edit';
                 editButton.onclick = () => editContact(contact.id);
                 actionsCell.appendChild(editButton);
 
                 // Botón de eliminar
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = 'Eliminar';
+                deleteButton.className = 'delete';
                 deleteButton.onclick = () => deleteContact(contact.id);
                 actionsCell.appendChild(deleteButton);
 

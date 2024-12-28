@@ -74,18 +74,37 @@ th, td {
 }
 
 td button {
-    background-color: #f44336;
-    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin-right: 5px; /* Espacio entre botones */
 }
 
-td button:hover, td button:focus {
+td button.edit {
+    background-color: #007bff; /* Azul para el botón de editar */
+    color: white;
+}
+
+td button.edit:hover, td button.edit:focus {
+    background-color: #0056b3;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
+}
+
+td button.delete {
+    background-color: #f44336;
+    color: white;
+    margin-left: 10px; /* Mueve el botón más a la derecha */
+}
+
+td button.delete:hover, td button.delete:focus {
     background-color: #e60000;
     outline: none;
     box-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
 }
+
 
 table tr:hover {
     background-color: #f1f1f1;
