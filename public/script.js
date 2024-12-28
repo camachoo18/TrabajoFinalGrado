@@ -63,7 +63,7 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
 
     // Verificar si el teléfono ya está registrado
     if (await isDuplicatePhone(telefono)) {
-        alert('El número de teléfono ya está registrado.');
+        showFeedback('El número de teléfono ya está registrado.');
         return;
     }
 
@@ -83,8 +83,6 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
         alert(responseBody.error || 'Error al agregar contacto');
     }
 });
-
-
 
 
 // Eliminar un contacto

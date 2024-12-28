@@ -24,9 +24,9 @@
 <!-- Formulario para editar contacto -->
 <form id="editForm" style="display: none;">
     <input type="text" id="editNombre" placeholder="Nombre" required>
-    <input type="text" id="editTelefono" placeholder="Teléfono" required>
+    <input type="text" id="editTelefono" placeholder="Teléfono(Solo números)" required pattern="[0-9]{9}" maxlength="9">
     <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
-    <textarea id="editNotas" placeholder="Notas"></textarea>
+    <textarea id="editNotas" placeholder="Notas(Opcional)"></textarea>
     <button type="submit">Actualizar Contacto</button>
 </form>
 
