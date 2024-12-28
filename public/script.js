@@ -13,7 +13,7 @@ async function loadContacts() {
         const response = await fetch('/contacts');
         if (response.ok) {
             const contacts = await response.json();
-            
+
             // Verificar si el elemento de la tabla existe antes de intentar modificarlo
             const tableBody = document.querySelector('#contactList tbody');
             if (!tableBody) {
@@ -25,7 +25,9 @@ async function loadContacts() {
 
             contacts.forEach(contact => {
                 const row = document.createElement('tr');
-                // Crear y agregar celdas con textContent
+                row.dataset.id = contact.id; // Guardar el ID en la fila
+
+                // Crear celdas con textContent
                 const nombreCell = document.createElement('td');
                 nombreCell.textContent = contact.nombre;
                 row.appendChild(nombreCell);
@@ -44,11 +46,12 @@ async function loadContacts() {
 
                 // Crear celda para botones
                 const actionsCell = document.createElement('td');
+
                 // Botón de editar
                 const editButton = document.createElement('button');
                 editButton.textContent = 'Editar';
                 editButton.className = 'edit';
-                editButton.onclick = () => editContact(contact.id);
+                editButton.onclick = () => toggleEditMode(row, contact.id);
                 actionsCell.appendChild(editButton);
 
                 // Botón de eliminar
@@ -68,6 +71,98 @@ async function loadContacts() {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
+
+// Validación del correo en tiempo real
+function validateEmailInput(input) {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const value = input.value.trim();
+    if (regex.test(value)) {
+        input.setCustomValidity(""); // Si el correo es válido, se quita el mensaje de error
+    } else {
+        input.setCustomValidity("Por favor, ingresa un correo válido (ejemplo@dominio.com)");
+    }
+}
+
+// Llamar a la función de validación cada vez que el usuario escriba
+document.getElementById('editEmail')?.addEventListener('input', function () {
+    validateEmailInput(this);
+});
+
+// Cambia vista edicion
+function toggleEditMode(row, id) {
+    const isEditing = row.classList.contains('editing');
+    const cells = row.querySelectorAll('td');
+
+    if (isEditing) {
+        // Obtener los valores de los campos editados
+        const updatedContact = {
+            nombre: cells[0].querySelector('input').value.trim(),
+            telefono: cells[1].querySelector('input').value.trim(),
+            email: cells[2].querySelector('input').value.trim(),
+            notas: cells[3].querySelector('input').value.trim(),
+        };
+
+        // Validar que los campos no estén vacíos
+        if (!updatedContact.nombre || !updatedContact.telefono || !updatedContact.email) {
+            showFeedback('Los campos de nombre, teléfono y correo son obligatorios.', false);
+            return;  // No guardar si hay campos vacíos
+        }
+
+        // Validación del correo
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(updatedContact.email)) {
+            showFeedback('El correo electrónico debe tener el formato correcto: ejemplo@dominio.com.', false);
+            return;  // No guardar si el correo no es válido
+        }
+
+        saveContact(id, updatedContact, row);
+    } else {
+        // Cambiar a modo edición
+        cells[0].innerHTML = `<input type="text" value="${cells[0].textContent}">`;
+        cells[1].innerHTML = `<input type="text" value="${cells[1].textContent}" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9);">`;
+        cells[2].innerHTML = `<input type="email" value="${cells[2].textContent}" required>`;  // Asegúrate de mantener el tipo "email"
+        cells[3].innerHTML = `<input type="text" value="${cells[3].textContent}">`;
+
+        const editButton = row.querySelector('.edit');
+        editButton.textContent = 'Guardar';
+    }
+
+    row.classList.toggle('editing');
+}
+
+// Guarda los datos editados en el backend
+async function saveContact(id, updatedContact, row) {
+    try {
+        const response = await fetch(`/edit/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedContact),
+        });
+
+        if (response.ok) {
+            const cells = row.querySelectorAll('td');
+            // Volver al modo de solo lectura
+            cells[0].textContent = updatedContact.nombre;
+            cells[1].textContent = updatedContact.telefono;
+            cells[2].textContent = updatedContact.email;
+            cells[3].textContent = updatedContact.notas;
+
+            row.querySelector('.edit').textContent = 'Editar';
+            row.classList.remove('editing');
+            showFeedback('Contacto actualizado correctamente');
+        } else {
+            const error = await response.json();
+            showFeedback(error.message || 'Error al actualizar el contacto', false);
+        }
+    } catch (err) {
+        showFeedback(`Error al guardar contacto: ${err.message}`, false);
+    }
+}
+
+
+
+
+
 
 
 // Función para verificar si el teléfono ya está registrado
