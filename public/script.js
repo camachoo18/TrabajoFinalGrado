@@ -3,22 +3,28 @@ function showFeedback(message, success = true) {
     const feedback = document.createElement('div');
     feedback.textContent = message;
     feedback.className = success ? 'feedback success' : 'feedback error';
-
     document.body.appendChild(feedback);
     setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
 
+// Cargar contactos
 async function loadContacts() {
     try {
         const response = await fetch('/contacts');
         if (response.ok) {
             const contacts = await response.json();
+            
+            // Verificar si el elemento de la tabla existe antes de intentar modificarlo
             const tableBody = document.querySelector('#contactList tbody');
+            if (!tableBody) {
+                console.error('Elemento de la tabla no encontrado');
+                return; // Salir de la función si la tabla no está presente
+            }
+
             tableBody.innerHTML = ''; // Limpia el contenido actual
 
             contacts.forEach(contact => {
                 const row = document.createElement('tr');
-
                 // Crear y agregar celdas con textContent
                 const nombreCell = document.createElement('td');
                 nombreCell.textContent = contact.nombre;
@@ -38,7 +44,6 @@ async function loadContacts() {
 
                 // Crear celda para botones
                 const actionsCell = document.createElement('td');
-
                 // Botón de editar
                 const editButton = document.createElement('button');
                 editButton.textContent = 'Editar';
@@ -54,7 +59,6 @@ async function loadContacts() {
                 actionsCell.appendChild(deleteButton);
 
                 row.appendChild(actionsCell);
-
                 tableBody.appendChild(row);
             });
         } else {
@@ -64,8 +68,6 @@ async function loadContacts() {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
-
-
 
 
 // Función para verificar si el teléfono ya está registrado
@@ -79,12 +81,10 @@ async function isDuplicatePhone(phone) {
 }
 
 // Agregar un contacto
-document.getElementById('contactForm').addEventListener('submit', async (e) => {
+document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-
     let telefono = document.getElementById('telefono').value;
     telefono = telefono.replace(/\D/g, '');  // Elimina todo lo que no sea un número
-
     const nombre = document.getElementById('nombre').value;
     const email = document.getElementById('email').value;
     const notas = document.getElementById('notas').value;
@@ -104,7 +104,6 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
     });
 
     if (response.ok) {
-        const responseBody = await response.json(); // Obtén la respuesta del servidor
         loadContacts(); // Recarga la lista de contactos
         showFeedback(`Contacto "${contact.nombre}" añadido correctamente`);
     } else {
@@ -113,8 +112,6 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
         showFeedback(responseBody.error || 'Error al agregar contacto', false); // Mostrar mensaje de error
     }
 });
-
-
 
 // Eliminar un contacto
 async function deleteContact(id) {
@@ -147,8 +144,9 @@ async function editContact(id) {
         showFeedback('Error al cargar datos del contacto', false);
     }
 }
+
 // Función para actualizar un contacto
-document.getElementById('editForm').addEventListener('submit', async (e) => {
+document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('editForm').dataset.id;
@@ -176,8 +174,9 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
     }
 });
 
-
 // Cargar contactos al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
-    loadContacts();
+    if (document.querySelector('#contactList')) {
+        loadContacts();
+    }
 });
