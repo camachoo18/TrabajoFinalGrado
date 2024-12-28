@@ -19,20 +19,51 @@ app.get('/contacts', (req, res) => {
         }
     });
 });
+// Middleware para validar datos del contacto
+function validateContact(req, res, next) {
+    const { nombre, telefono, email } = req.body;
 
+    // Verificar que los campos obligatorios estén presentes
+    if (!nombre || !telefono || !email) {
+        return res.status(400).json({ error: 'Nombre, teléfono y email son obligatorios' });
+    }
 
-// Ruta para agregar un nuevo contacto
-app.post('/add', (req, res) => {
+    // Validar que el teléfono tenga exactamente 9 dígitos numéricos
+    if (!/^\d{9}$/.test(telefono)) {
+        return res.status(400).json({ error: 'El teléfono debe tener exactamente 9 dígitos' });
+    }
+
+    // Si todo está correcto, continúa con la siguiente función
+    next();
+}
+
+// Ruta para agregar un nuevo contacto con middleware de validación
+app.post('/add', validateContact, (req, res) => {
     const { nombre, telefono, email, notas } = req.body;
-    const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas) VALUES (?, ?, ?, ?)');
-    stmt.run(nombre, telefono, email, notas, function(err) {
+
+    // Verificar duplicados en la base de datos
+    const duplicateCheckQuery = 'SELECT COUNT(*) AS count FROM contacts WHERE telefono = ?';
+    db.get(duplicateCheckQuery, [telefono], (err, row) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-        } else {
-            res.status(200).json({ id: this.lastID });
+            return res.status(500).json({ error: 'Error al verificar duplicados' });
         }
+        if (row.count > 0) {
+            return res.status(400).json({ error: 'El número de teléfono ya está registrado' });
+        }
+
+        // Insertar contacto si no hay duplicado
+        const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas) VALUES (?, ?, ?, ?)');
+        stmt.run(nombre, telefono, email, notas, function (err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+            } else {
+                res.status(200).json({ id: this.lastID });
+            }
+        });
     });
 });
+
+
 
 // Ruta para eliminar un contacto
 app.delete('/delete/:id', (req, res) => {

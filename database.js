@@ -14,7 +14,7 @@ db.run(`
     CREATE TABLE IF NOT EXISTS contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL,
-        telefono TEXT,
+        telefono TEXT UNIQUE,
         email TEXT,
         notas TEXT
     );

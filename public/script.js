@@ -8,9 +8,7 @@ function showFeedback(message, success = true) {
     setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
 
-// Función para cargar contactos desde el backend
 async function loadContacts() {
-
     try {
         const response = await fetch('/contacts');
         if (response.ok) {
@@ -20,16 +18,41 @@ async function loadContacts() {
 
             contacts.forEach(contact => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${contact.nombre}</td>
-                    <td>${contact.telefono}</td>
-                    <td>${contact.email}</td>
-                    <td>${contact.notas}</td>
-                    <td>
-                        <button onclick="editContact(${contact.id})">Editar</button>
-                        <button onclick="deleteContact(${contact.id})">Eliminar</button>
-                    </td>
-                `;
+
+                // Crear y agregar celdas con textContent
+                const nombreCell = document.createElement('td');
+                nombreCell.textContent = contact.nombre;
+                row.appendChild(nombreCell);
+
+                const telefonoCell = document.createElement('td');
+                telefonoCell.textContent = contact.telefono;
+                row.appendChild(telefonoCell);
+
+                const emailCell = document.createElement('td');
+                emailCell.textContent = contact.email;
+                row.appendChild(emailCell);
+
+                const notasCell = document.createElement('td');
+                notasCell.textContent = contact.notas;
+                row.appendChild(notasCell);
+
+                // Crear celda para botones
+                const actionsCell = document.createElement('td');
+
+                // Botón de editar
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Editar';
+                editButton.onclick = () => editContact(contact.id);
+                actionsCell.appendChild(editButton);
+
+                // Botón de eliminar
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.onclick = () => deleteContact(contact.id);
+                actionsCell.appendChild(deleteButton);
+
+                row.appendChild(actionsCell);
+
                 tableBody.appendChild(row);
             });
         } else {
@@ -39,6 +62,9 @@ async function loadContacts() {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
+
+
+
 
 // Función para verificar si el teléfono ya está registrado
 async function isDuplicatePhone(phone) {
@@ -76,12 +102,15 @@ document.getElementById('contactForm').addEventListener('submit', async (e) => {
     });
 
     if (response.ok) {
-        loadContacts();
+        const responseBody = await response.json(); // Obtén la respuesta del servidor
+        loadContacts(); // Recarga la lista de contactos
+        showFeedback(`Contacto "${contact.nombre}" añadido correctamente`);
     } else {
         const responseBody = await response.json();
         console.log('Error al agregar contacto:', responseBody);  // Log del error
-        alert(responseBody.error || 'Error al agregar contacto');
+        showFeedback(responseBody.error || 'Error al agregar contacto', false); // Mostrar mensaje de error
     }
+    
 });
 
 
