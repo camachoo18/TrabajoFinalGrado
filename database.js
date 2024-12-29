@@ -26,5 +26,29 @@ db.run(`
     }
 });
 
+// Asegurarse de que la columna 'categoria' existe en la tabla
+db.all(`
+    PRAGMA table_info(contacts);
+`, (err, columns) => {
+    if (err) {
+        console.error('Error al verificar columnas:', err.message);
+    } else {
+        const columnNames = columns.map(column => column.name);
+        if (!columnNames.includes('categoria')) {
+            db.run(`
+                ALTER TABLE contacts ADD COLUMN categoria TEXT DEFAULT 'Sin Categoría';
+            `, (err) => {
+                if (err) {
+                    console.error('Error al agregar la columna "categoria":', err.message);
+                } else {
+                    console.log('Columna "categoria" agregada correctamente.');
+                }
+            });
+        } else {
+            console.log('La columna "categoria" ya existe.');
+        }
+    }
+});
+
 // Exportar la base de datos para usarla en otros archivos
 module.exports = db;

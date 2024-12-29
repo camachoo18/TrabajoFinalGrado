@@ -269,6 +269,84 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     }
 });
 
+// Buscar y filtrar contactos
+document.getElementById('searchInput')?.addEventListener('input', async (e) => {
+    const query = e.target.value; // Obtener el valor del campo de búsqueda
+    try {
+        const response = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`);
+        if (response.ok) {
+            const contacts = await response.json();
+
+            // Actualiza la tabla con los contactos filtrados
+            const tableBody = document.querySelector('#contactList tbody');
+            if (tableBody) {
+                tableBody.innerHTML = ''; // Limpia el contenido actual
+
+                contacts.forEach(contact => {
+                    const row = document.createElement('tr');
+                    row.dataset.id = contact.id;
+
+                    const nombreCell = document.createElement('td');
+                    nombreCell.textContent = contact.nombre;
+                    row.appendChild(nombreCell);
+
+                    const telefonoCell = document.createElement('td');
+                    telefonoCell.textContent = contact.telefono;
+                    row.appendChild(telefonoCell);
+
+                    const emailCell = document.createElement('td');
+                    emailCell.textContent = contact.email;
+                    row.appendChild(emailCell);
+
+                    const notasCell = document.createElement('td');
+                    notasCell.textContent = contact.notas;
+                    row.appendChild(notasCell);
+
+                    const actionsCell = document.createElement('td');
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'Editar';
+                    editButton.className = 'edit';
+                    editButton.onclick = () => toggleEditMode(row, contact.id);
+                    actionsCell.appendChild(editButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Eliminar';
+                    deleteButton.className = 'delete';
+                    deleteButton.onclick = () => deleteContact(contact.id);
+                    actionsCell.appendChild(deleteButton);
+
+                    row.appendChild(actionsCell);
+                    tableBody.appendChild(row);
+                });
+            }
+        } else {
+            showFeedback('Error al buscar contactos', false);
+        }
+    } catch (err) {
+        showFeedback(`Error de conexión: ${err.message}`, false);
+    }
+});
+
+document.getElementById('categoria').addEventListener('change', function () {
+    const nuevaCategoriaInput = document.getElementById('nuevaCategoria');
+    if (this.value === 'Otra') {
+        nuevaCategoriaInput.style.display = 'block';
+    } else {
+        nuevaCategoriaInput.style.display = 'none';
+        nuevaCategoriaInput.value = ''; // Limpia el campo si no es necesario
+    }
+});
+document.getElementById('filtroCategoria').addEventListener('change', function () {
+    const categoria = this.value;
+    fetch(`/contacts?categoria=${categoria}`)
+        .then(res => res.json())
+        .then(data => {
+            // Renderiza la lista de contactos con la categoría seleccionada
+            renderContacts(data);
+        });
+});
+
+
 // Cargar contactos al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('#contactList')) {

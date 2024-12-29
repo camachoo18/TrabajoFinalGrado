@@ -7,6 +7,32 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+// Endpoint para buscar contactos
+app.get('/contacts/search', (req, res) => {
+    const query = req.query.q || ''; // Obtén la query de búsqueda (si no hay, usa una cadena vacía)
+    const sql = `
+        SELECT * FROM contacts
+        WHERE 
+            nombre LIKE ? OR
+            telefono LIKE ? OR
+            email LIKE ? OR
+            notas LIKE ?
+    `;
+    const searchTerm = `%${query}%`; // Usa comodines para búsqueda parcial
+
+    db.all(sql, [searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
+        if (err) {
+            console.error('Error al buscar contactos:', err.message);
+            res.status(500).json({ error: 'Error al buscar contactos' });
+        } else {
+            res.json(rows);
+        }
+    });
+});
+
+
+
 // Ruta para obtener todos los contactos
 app.get('/contacts', (req, res) => {
     const query = 'SELECT * FROM contacts';
@@ -32,9 +58,15 @@ function validateContact(req, res, next) {
     if (!/^\d{9}$/.test(telefono)) {
         return res.status(400).json({ error: 'El teléfono debe tener exactamente 9 dígitos' });
     }
+    
+    // Validar categoría
+    const categoriaFinal = nuevaCategoria?.trim() || categoria;
+    if (!categoriaFinal) {
+        return res.status(400).json({ error: 'La categoría es obligatoria' });
+    }
 
-    // Si todo está correcto, continúa con la siguiente función
-    next();
+    req.body.categoria = categoriaFinal; // Usar categoría final
+    next(); // SI TODO ESTA BIEN , PASA A LA
 }
 
 // Ruta para agregar un nuevo contacto con middleware de validación
@@ -79,7 +111,7 @@ app.delete('/delete/:id', (req, res) => {
 });
 
 // Ruta para editar un contacto
-app.put('/edit/:id', (req, res) => {
+app.put('/edit/:id', validateContact, (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, notas } = req.body;
 

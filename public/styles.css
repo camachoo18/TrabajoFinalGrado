@@ -98,7 +98,7 @@ button.dark-mode:hover {
     background-color: #555;
 }
 
-/* Estilos para el formulario y tabla (los que ya tenías) */
+/* Estilos para el formulario y tabla  */
 input, textarea {
     margin: 10px 0;
     padding: 10px;
@@ -309,4 +309,17 @@ table tr:hover {
     th, td {
         padding: 6px;
     }
+}
+
+#searchBar {
+    margin: 10px 0;
+    text-align: center;
+}
+
+#searchInput {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
