@@ -228,3 +228,85 @@ table tr:hover {
         opacity: 0;
     }
 }
+/* Estilos Responsivos para dispositivos moviles */
+@media (max-width: 768px) {
+    /* Ajustar el contenedor principal */
+    .container {
+        width: 90%; /* Reducir el ancho en dispositivos más pequeños */
+        margin-top: 20px; /* Reducir el margen superior */
+        padding: 20px; /* Reducir el padding */
+    }
+
+    /* Títulos más pequeños */
+    h1 {
+        font-size: 2em;
+    }
+
+    /* Ajustar navegación */
+    .navigation {
+        flex-direction: column; /* Cambiar a columna en lugar de fila */
+        gap: 10px; /* Reducir el espacio entre elementos */
+    }
+
+    .navigation a {
+        font-size: 1em; /* Reducir tamaño de fuente */
+        padding: 8px; /* Reducir padding */
+    }
+
+    /* Botones más pequeños */
+    button {
+        padding: 10px; /* Reducir padding */
+        font-size: 14px; /* Reducir tamaño de fuente */
+    }
+
+    /* Tablas responsivas */
+    table {
+        display: block; /* Convertir la tabla en un bloque desplazable */
+        overflow-x: auto; /* Habilitar scroll horizontal */
+        white-space: nowrap; /* Evitar que las celdas se envuelvan */
+    }
+
+    th, td {
+        font-size: 14px; /* Reducir tamaño de fuente */
+        padding: 8px; /* Reducir padding */
+    }
+
+    td button {
+        font-size: 12px; /* Botones dentro de la tabla más pequeños */
+        padding: 6px 10px; /* Reducir padding */
+    }
+
+    /* Feedback ajustado */
+    .feedback {
+        top: 5px; /* Reducir distancia desde el borde superior */
+        right: 5px; /* Reducir distancia desde el borde derecho */
+        font-size: 12px; /* Reducir tamaño de fuente */
+    }
+}
+
+/* Estilos para pantallas aún más pequeñas */
+@media (max-width: 480px) {
+    /* Títulos aún más pequeños */
+    h1 {
+        font-size: 1.8em;
+    }
+
+    /* Botones más compactos */
+    button {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .navigation a {
+        font-size: 0.9em;
+    }
+
+    /* Ajustar tabla */
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 6px;
+    }
+}
