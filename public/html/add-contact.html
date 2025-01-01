@@ -10,19 +10,23 @@
     <div class="container">
         <h1>Agregar Nuevo Contacto</h1>
         
+        <div id="feedback" class="feedback"></div>
+
         <!-- Formulario para agregar contacto -->
         <form id="contactForm">
-            <input type="text" id="nombre" placeholder="Nombre" required>
+            <input type="text" id="nombre" placeholder="Nombre" required minlength="2">
             <input type="tel" id="telefono" placeholder="Teléfono" required pattern="[0-9]{9}" maxlength="9">
             <input type="email" id="email" placeholder="Correo Electrónico" required>
             <textarea id="notas" placeholder="Notas"></textarea>
-            <select id="categoria" required>
+            <label for="categoria">Categoría:</label>
+            <select id="categoria" name="categoria" required>
                 <option value="Trabajo">Trabajo</option>
                 <option value="Amigos">Amigos</option>
                 <option value="Familia">Familia</option>
                 <option value="Sin Categoría">Sin Categoría</option>
                 <option value="Otra">Otra</option>
             </select>
+            <input type="text" id="nuevaCategoria" placeholder="Nueva Categoría" style="display: none;">
             <button type="submit">Agregar Contacto</button>
         </form>
         
@@ -33,10 +37,10 @@
     </div>
 
     <!-- Cargar los archivos JavaScript correspondientes -->
-    <script src="/js/uiHelper.js"></script> <!-- Para mostrar feedback -->
-    <script src="/js/categoryManager.js"></script> <!-- Para manejar categorías -->
-    <script src="/js/contactManager.js"></script> <!-- Para manejar CRUD de contactos -->
-    <script src="/js/filterManager.js"></script> <!-- Si se necesita en esta página -->
-    <script src="/js/addContact.js"></script> <!-- Archivo específico para manejar la acción de agregar contacto -->
+    <script src="/js/uiHelper.js"></script>
+    <script src="/js/contactManager.js"></script>
+    <script src="/js/categoryManager.js"></script>
+    <script src="/js/filterManager.js"></script>
+    
 </body>
 </html>

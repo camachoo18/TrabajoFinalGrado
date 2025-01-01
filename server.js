@@ -30,20 +30,6 @@ app.get('/contacts/search', (req, res) => {
     });
 });
 
-// Ruta para obtener todas las categorías
-// Backend (Express) - Cargar categorías
-// Endpoint para obtener las categorías desde la base de datos
-app.get('/categories', (req, res) => {
-    db.all('SELECT * FROM categories', (err, rows) => {
-        if (err) {
-            console.error('Error al obtener categorías:', err.message);
-            return res.status(500).json({ error: 'Error al cargar categorías' });
-        }
-
-        return res.status(200).json(rows);  // Devuelve todas las categorías
-    });
-});
-
 
 
 
@@ -79,6 +65,7 @@ app.post('/categories/add', (req, res) => {
 });
 
 // Ruta para agregar un nuevo contacto con middleware de validación
+// Ruta para agregar un nuevo contacto con middleware de validación
 app.post('/add', validateContact, (req, res) => {
     const { nombre, telefono, email, notas, categoria } = req.body;
 
@@ -92,51 +79,30 @@ app.post('/add', validateContact, (req, res) => {
             return res.status(400).json({ error: 'El número de teléfono ya está registrado' });
         }
 
-        // Obtener el ID de la categoría o crearla si no existe
-        db.get('SELECT id FROM categories WHERE nombre = ?', [categoria], (err, categoryRow) => {
-            if (err) {
-                return res.status(500).json({ error: 'Error al obtener la categoría' });
-            }
-
-            // Si no existe la categoría, crearla
-            if (!categoryRow) {
-                const insertCategoryQuery = 'INSERT INTO categories (nombre) VALUES (?)';
-                db.run(insertCategoryQuery, [categoria], function (err) {
-                    if (err) {
-                        return res.status(500).json({ error: 'Error al crear la categoría' });
-                    }
-                    // Insertar el contacto con la nueva categoría creada
-                    insertContact(this.lastID);
-                });
-            } else {
-                // Insertar el contacto con la categoría existente
-                insertContact(categoryRow.id);
-            }
-        });
-
-        // Función para insertar un contacto
-        function insertContact(categoryId) {
-            const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria_id) VALUES (?, ?, ?, ?, ?)');
-            stmt.run(nombre, telefono, email, notas, categoryId, function (err) {
-                if (err) {
-                    res.status(500).json({ error: err.message });
-                } else {
-                    res.status(200).json({ id: this.lastID });
-                }
-            });
+        // Verificar si la categoría es válida
+        const validCategories = ['Trabajo', 'Amigos', 'Familia', 'Sin Categoría', 'Otra'];
+        if (!validCategories.includes(categoria)) {
+            return res.status(400).json({ error: 'Categoría inválida' });
         }
+
+        // Insertar el contacto
+        const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria) VALUES (?, ?, ?, ?, ?)');
+        stmt.run(nombre, telefono, email, notas, categoria, function (err) {
+            if (err) {
+                return res.status(500).json({ error: 'Error al agregar contacto' });
+            }
+            res.status(200).json({ id: this.lastID });
+        });
     });
 });
-
-
 
 // Middleware para validar datos del contacto
 function validateContact(req, res, next) {
     const { nombre, telefono, email, categoria } = req.body;
 
     // Verificar que los campos obligatorios estén presentes
-    if (!nombre || !telefono || !email) {
-        return res.status(400).json({ error: 'Nombre, teléfono y email son obligatorios' });
+    if (!nombre || !telefono || !email || !categoria) {
+        return res.status(400).json({ error: 'Nombre, teléfono, email y categoría son obligatorios' });
     }
 
     // Validar que el teléfono tenga exactamente 9 dígitos numéricos
@@ -144,13 +110,9 @@ function validateContact(req, res, next) {
         return res.status(400).json({ error: 'El teléfono debe tener exactamente 9 dígitos' });
     }
 
-    // Validar que la categoría sea válida
-    if (!categoria) {
-        return res.status(400).json({ error: 'La categoría es obligatoria' });
-    }
-
     next(); // Continuar si todo es válido
 }
+
 
 // Ruta para obtener todos los contactos
 app.get('/contacts', (req, res) => {
