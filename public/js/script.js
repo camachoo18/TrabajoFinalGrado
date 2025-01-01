@@ -341,12 +341,6 @@ async function saveContact(id, updatedContact, row) {
     }
 }
 
-
-
-
-
-
-
 // Función para verificar si el teléfono ya está registrado
 async function isDuplicatePhone(phone) {
     const response = await fetch('/contacts');

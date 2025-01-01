@@ -1,9 +1,7 @@
-// viewContacts.js
-
-// Cargar y mostrar todos los contactos en la tabla
-async function loadContacts() {
+// Función para mostrar los contactos en la tabla
+async function renderContacts() {
     try {
-        const response = await fetch('/contacts'); // Asegúrate de que este endpoint te devuelve los contactos
+        const response = await fetch('/contacts');
         if (!response.ok) {
             throw new Error('Error al obtener los contactos');
         }
@@ -27,18 +25,18 @@ async function loadContacts() {
             tableBody.appendChild(row);
         });
     } catch (error) {
-        showError('Error al cargar los contactos.');
+        showFeedback('Error al cargar los contactos.', false); // Mensaje de error
     }
 }
 
-// Llamar la función para cargar los contactos cuando se cargue la página
-document.addEventListener('DOMContentLoaded', loadContacts);
-
-// Función para mostrar el mensaje de error
-function showError(message) {
+// Función para mostrar feedback (éxito o error)
+function showFeedback(message, success = true) {
     const feedback = document.createElement('div');
     feedback.textContent = message;
-    feedback.className = 'feedback error';
+    feedback.className = success ? 'feedback success' : 'feedback error';
     document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000);
+    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
+
+// Llamar la función para cargar los contactos cuando se cargue la página
+document.addEventListener('DOMContentLoaded', renderContacts);
