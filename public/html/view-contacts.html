@@ -3,47 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Contactos</title>
+    <title>Ver Contactos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="searchBar">
-        <input type="text" id="searchInput" placeholder="Buscar contactos..." />
-    </div>
-    <label for="filtroCategoria">Filtrar por categoría:</label>
-        <select id="filtroCategoria">
-            <option value="Todos">Todos</option>
-            <option value="Familia">Familia</option>
-            <option value="Amigos">Amigos</option>
-            <option value="Trabajo">Trabajo</option>
-        </select>
-    
-    
     <div class="container">
         <h1>Lista de Contactos</h1>
+        
+        <!-- Filtro de contactos -->
+        <div id="searchBar">
+            <input type="text" id="searchInput" placeholder="Buscar contactos...">
+        </div>
 
-        <h2>Contactos</h2>
+        <!-- Tabla para mostrar los contactos -->
         <table id="contactList">
             <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Teléfono</th>
                     <th>Email</th>
-                    <th>Notas</th>
                     <th>Categoría</th> 
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="contactsTableBody">
                 <!-- Los contactos se agregarán aquí dinámicamente -->
             </tbody>
         </table>
 
+        <!-- Navegación hacia la página de agregar contacto -->
         <div class="navigation">
-            <a href="index.html">Volver a la Página Principal</a>
+            <a href="add-contact.html">Agregar Nuevo Contacto</a>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Cargar los archivos JavaScript -->
+    <script src="js/uiHelper.js"></script> <!-- Para feedback -->
+    <script src="js/contactManager.js"></script> <!-- Para CRUD -->
+    <script src="js/filterManager.js"></script> <!-- Para búsqueda -->
+    <script src="js/viewContacts.js"></script> <!-- Para cargar los contactos -->
 </body>
 </html>

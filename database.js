@@ -17,37 +17,22 @@ db.run(`
         telefono TEXT NOT NULL UNIQUE,
         email TEXT NOT NULL,
         notas TEXT,
-        categoria TEXT
+        categoria TEXT NOT NULL CHECK (categoria IN ('Trabajo', 'Amigos', 'Familia', 'Sin Categoría', 'Otra'))
     );
 `, (err) => {
     if (err) {
-        console.error('Error al crear la tabla:', err.message);
+        console.error('Error al crear la tabla de contactos:', err.message);
     } else {
         console.log('Tabla de contactos creada (o ya existe).');
     }
 });
 
-// Asegurarse de que la columna 'categoria' existe en la tabla
-db.all(`
-    PRAGMA table_info(contacts);
-`, (err, columns) => {
+// Eliminar la tabla de categorías si existe (ya no la necesitamos)
+db.run(`DROP TABLE IF EXISTS categories;`, (err) => {
     if (err) {
-        console.error('Error al verificar columnas:', err.message);
+        console.error('Error al eliminar la tabla de categorías:', err.message);
     } else {
-        const columnNames = columns.map(column => column.name);
-        if (!columnNames.includes('categoria')) {
-            db.run(`
-                ALTER TABLE contacts ADD COLUMN categoria TEXT DEFAULT 'Sin Categoría';
-            `, (err) => {
-                if (err) {
-                    console.error('Error al agregar la columna "categoria":', err.message);
-                } else {
-                    console.log('Columna "categoria" agregada correctamente.');
-                }
-            });
-        } else {
-            console.log('La columna "categoria" ya existe.');
-        }
+        console.log('Tabla de categorías eliminada.');
     }
 });
 

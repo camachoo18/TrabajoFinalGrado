@@ -323,3 +323,88 @@ table tr:hover {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+
+/* Estilos para el select de categoría en el formulario */
+select#categoria, input#nuevaCategoria {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+    margin-top: 10px;
+}
+
+select#categoria:focus, input#nuevaCategoria:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+select#categoria option {
+    padding: 8px;
+}
+
+/* Estilos para el contenedor de categoría */
+.categoria-container {
+    margin-top: 20px;
+}
+
+.categoria-container label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.categoria-container input#nuevaCategoria {
+    margin-top: 10px;
+}
+/* Estilos para el filtro de categoría */
+#categoryFilter {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+    margin-bottom: 20px;
+}
+
+#categoryFilter:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+#categoryFilter option {
+    padding: 8px;
+}
+
+/* Contenedor de filtro de categoría */
+.category-filter-container {
+    margin-top: 20px;
+}
+
+.category-filter-container label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+/* Contenedor para los campos de categoría y filtro */
+.category-container, .category-filter-container {
+    margin-top: 20px;
+}
+
+/* Etiquetas de categorías o filtros */
+.category-container label, .category-filter-container label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}

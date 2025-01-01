@@ -8,40 +8,37 @@ function showFeedback(message, success = true) {
 }
 
 
-// Función para cargar las categorías en un select específico
-async function loadCategories(selectElementId) {
-    try {
-        const response = await fetch('/categories');
-        if (response.ok) {
-            const categories = await response.json();
-            const selectElement = document.getElementById(selectElementId);
 
-            if (selectElement) {
-                selectElement.innerHTML = ''; // Limpia las opciones existentes
-                selectElement.innerHTML += '<option value="">Todas</option>'; // Opción por defecto
 
-                categories.forEach(category => {
-                    const option = document.createElement('option');
-                    option.value = category.nombre;
-                    option.textContent = category.nombre;
-                    selectElement.appendChild(option);
-                });
+// Función para cargar las categorías en los selects
+function loadCategories() {
+    // Obtener los selects de categoría
+    const categorySelectFilter = document.getElementById('filtroCategoria');
+    const categorySelectAddContact = document.getElementById('categoria');
 
-                // Si es el select 'categoria', añade la opción "Otra"
-                if (selectElementId === 'categoria') {
-                    const optionOtra = document.createElement('option');
-                    optionOtra.value = 'Otra';
-                    optionOtra.textContent = 'Otra';
-                    selectElement.appendChild(optionOtra);
-                }
-            }
-        } else {
-            showFeedback('Error al cargar categorías', false);
-        }
-    } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
-    }
+    // Limpiar las opciones anteriores (si existiesen) en el filtro de categorías
+    categorySelectFilter.innerHTML = '';  // Limpiar todas las opciones
+    categorySelectAddContact.innerHTML = '';  // Limpiar select agregar contacto
+
+    // Añadir la opción "Todos" al filtro
+    const optionTodos = document.createElement('option');
+    optionTodos.value = "Todos";
+    optionTodos.textContent = "Todos";
+    categorySelectFilter.appendChild(optionTodos);
+
+    // Añadir las categorías estáticas en el filtro y en el formulario de agregar contacto
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categorySelectFilter.appendChild(option);
+        categorySelectAddContact.appendChild(option.cloneNode(true)); // Añadir al formulario de agregar contacto
+    });
 }
+
+
+
+
 
 // Manejar el cambio de categoría (nueva categoría)
 document.getElementById('categoria')?.addEventListener('change', function () {
@@ -73,7 +70,7 @@ async function addCategory(name) {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
-// Agregar un contacto
+// Función para agregar un contacto
 document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -96,11 +93,8 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
 
     // Si el usuario selecciona "Otra", agregar nueva categoría
     if (categoria === 'Otra' && nuevaCategoria) {
-        const addCategoryResponse = await addCategory(nuevaCategoria);
-        if (!addCategoryResponse.ok) {
-            showFeedback('Error al agregar nueva categoría.', false);
-            return;
-        }
+        addCategory(nuevaCategoria);  // Agregar la categoría a la lista estática
+        nuevaCategoria = nuevaCategoria; // Usar la nueva categoría
     } else {
         nuevaCategoria = categoria; // Usar la categoría seleccionada
     }
@@ -183,6 +177,7 @@ async function loadContacts() {
         const response = await fetch('/contacts');
         if (response.ok) {
             const contacts = await response.json();
+            
             
             renderContacts(contacts);
             const tableBody = document.querySelector('#contactList tbody');
@@ -490,13 +485,13 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     // Si estamos en add-contact.html (presencia del elemento 'categoria')
     if (document.getElementById('categoria')) {
-        console.log('Cargando funcionalidades de agregar contacto...');
+        
         loadCategories('categoria'); // Carga las categorías para el formulario de agregar
     }
 
     // Si estamos en view-contact.html (presencia del elemento 'filtroCategoria' o 'contactList')
     if (document.getElementById('filtroCategoria') || document.querySelector('#contactList tbody')) {
-        console.log('Cargando funcionalidades de visualización de contactos...');
+        
         loadCategories('filtroCategoria'); // Carga las categorías para el filtro
         loadContacts(); // Carga los contactos en la tabla
     }

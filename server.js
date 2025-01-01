@@ -32,14 +32,20 @@ app.get('/contacts/search', (req, res) => {
 
 // Ruta para obtener todas las categorías
 // Backend (Express) - Cargar categorías
-app.get('/categories', async (req, res) => {
-    try {
-        const categories = await db.query('SELECT * FROM categories');
-        res.status(200).json(categories);
-    } catch (err) {
-        res.status(500).json({ error: 'Error al cargar categorías' });
-    }
+// Endpoint para obtener las categorías desde la base de datos
+app.get('/categories', (req, res) => {
+    db.all('SELECT * FROM categories', (err, rows) => {
+        if (err) {
+            console.error('Error al obtener categorías:', err.message);
+            return res.status(500).json({ error: 'Error al cargar categorías' });
+        }
+
+        return res.status(200).json(rows);  // Devuelve todas las categorías
+    });
 });
+
+
+
 
 
 // Ruta para agregar una nueva categoría
@@ -86,17 +92,43 @@ app.post('/add', validateContact, (req, res) => {
             return res.status(400).json({ error: 'El número de teléfono ya está registrado' });
         }
 
-        // Insertar contacto si no hay duplicado
-        const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria) VALUES (?, ?, ?, ?, ?)');
-        stmt.run(nombre, telefono, email, notas, categoria, function (err) {
+        // Obtener el ID de la categoría o crearla si no existe
+        db.get('SELECT id FROM categories WHERE nombre = ?', [categoria], (err, categoryRow) => {
             if (err) {
-                res.status(500).json({ error: err.message });
+                return res.status(500).json({ error: 'Error al obtener la categoría' });
+            }
+
+            // Si no existe la categoría, crearla
+            if (!categoryRow) {
+                const insertCategoryQuery = 'INSERT INTO categories (nombre) VALUES (?)';
+                db.run(insertCategoryQuery, [categoria], function (err) {
+                    if (err) {
+                        return res.status(500).json({ error: 'Error al crear la categoría' });
+                    }
+                    // Insertar el contacto con la nueva categoría creada
+                    insertContact(this.lastID);
+                });
             } else {
-                res.status(200).json({ id: this.lastID });
+                // Insertar el contacto con la categoría existente
+                insertContact(categoryRow.id);
             }
         });
+
+        // Función para insertar un contacto
+        function insertContact(categoryId) {
+            const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria_id) VALUES (?, ?, ?, ?, ?)');
+            stmt.run(nombre, telefono, email, notas, categoryId, function (err) {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                } else {
+                    res.status(200).json({ id: this.lastID });
+                }
+            });
+        }
     });
 });
+
+
 
 // Middleware para validar datos del contacto
 function validateContact(req, res, next) {
@@ -177,7 +209,7 @@ app.get('/contacts/:id', (req, res) => {
 
 // Servir la página HTML
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
 });
 
 app.listen(port, () => {
