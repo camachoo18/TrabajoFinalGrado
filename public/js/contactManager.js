@@ -301,6 +301,7 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
 
 
 // Función para eliminar un contacto
+// Función para eliminar un contacto
 function deleteContact(contactId) {
     fetch(`/contacts/delete/${contactId}`, {
         method: 'DELETE',
@@ -313,12 +314,13 @@ function deleteContact(contactId) {
         }
 
         showFeedback('Contacto eliminado con éxito');
-        renderContacts(data); // Aquí pasas los contactos actualizados a renderContacts
+        loadContacts(); // Aquí pasas los contactos actualizados a loadContacts
     })
     .catch(error => {
-        console.error('Error al eliminar el contacto:', error);
+        showFeedback('Error al eliminar el contacto:', error);
     });
 }
+
 
 
 document.addEventListener('DOMContentLoaded', loadContacts);
