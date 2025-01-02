@@ -79,6 +79,8 @@ async function isDuplicatePhone(phone) {
     return false;
 }
 
+
+
 async function loadContacts() {
     console.log("Cargando contactos...");
     try {
@@ -154,6 +156,7 @@ async function loadContacts() {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
+
 
 // Función para agregar un contacto
 document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
@@ -260,6 +263,8 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 });
+
+
 
 
 // Función para eliminar un contacto

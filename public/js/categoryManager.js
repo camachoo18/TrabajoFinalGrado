@@ -1,9 +1,18 @@
+// Función para mostrar feedback
+function showFeedback(message, success = true) {
+    const feedback = document.createElement('div');
+    feedback.textContent = message;
+    feedback.className = success ? 'feedback success' : 'feedback error';
+    document.body.appendChild(feedback);
+    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
+}
+
 // Categorías estáticas
-const categories = ['Amigos', 'Familia', 'Trabajo', 'Otros'];  // Añade aquí todas las categorías que necesites
+const categories = ['Amigos', 'Familia', 'Trabajo', 'Sin categoria', 'Otra'];  // Añade aquí todas las categorías que necesites
 
 // Cargar categorías
 function loadCategories() {
-    const categorySelect = document.getElementById('categorySelect');
+    const categorySelect = document.getElementById('categoria');
     categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
 
     categories.forEach(category => {
@@ -18,18 +27,30 @@ function loadCategories() {
 function addCategory(categoryName) {
     // Verificar si la categoría ya existe
     if (categories.includes(categoryName)) {
-        showError('La categoría ya existe.');
+        showFeedback('La categoría ya existe.');
     } else {
         categories.push(categoryName);
-        showSuccess('Categoría agregada.');
+        showFeedback('Categoría agregada.');
         loadCategories();  // Recarga las categorías después de agregar una nueva
     }
 }
 
-// Cargar categorías al iniciar la página
+// Mostrar u ocultar el campo de nueva categoría
 document.addEventListener('DOMContentLoaded', () => {
-    // Si estamos en add-contact.html (presencia del elemento 'categoria')
-    if (document.getElementById('categorySelect')) {
-        loadCategories(); // Carga las categorías para el formulario de agregar
+    const categoriaSelect = document.getElementById('categoria');
+    const nuevaCategoriaInput = document.getElementById('nuevaCategoria');
+
+    if (categoriaSelect) {
+        // Cargar las categorías iniciales
+        loadCategories();
+
+        // Mostrar/ocultar el campo de nueva categoría cuando el usuario selecciona "Otra"
+        categoriaSelect.addEventListener('change', function () {
+            if (this.value === 'Otra') {
+                nuevaCategoriaInput.style.display = 'block'; // Mostrar campo para nueva categoría
+            } else {
+                nuevaCategoriaInput.style.display = 'none'; // Ocultar campo para nueva categoría
+            }
+        });
     }
 });

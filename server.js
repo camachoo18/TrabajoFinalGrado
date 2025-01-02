@@ -65,7 +65,7 @@ app.post('/categories/add', (req, res) => {
 });
 
 // Ruta para agregar un nuevo contacto con middleware de validación
-// Ruta para agregar un nuevo contacto con middleware de validación
+// Endpoint para agregar contacto
 app.post('/add', validateContact, (req, res) => {
     const { nombre, telefono, email, notas, categoria } = req.body;
 
@@ -80,8 +80,7 @@ app.post('/add', validateContact, (req, res) => {
         }
 
         // Verificar si la categoría es válida
-        const validCategories = ['Trabajo', 'Amigos', 'Familia', 'Sin Categoría', 'Otra'];
-        if (!validCategories.includes(categoria)) {
+        if (!categoria || categoria.trim() === '') {
             return res.status(400).json({ error: 'Categoría inválida' });
         }
 
@@ -95,6 +94,7 @@ app.post('/add', validateContact, (req, res) => {
         });
     });
 });
+
 
 // Middleware para validar datos del contacto
 function validateContact(req, res, next) {
