@@ -28,15 +28,3 @@ async function renderContacts() {
         showFeedback('Error al cargar los contactos.', false); // Mensaje de error
     }
 }
-
-// Función para mostrar feedback (éxito o error)
-function showFeedback(message, success = true) {
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
-}
-
-// Llamar la función para cargar los contactos cuando se cargue la página
-document.addEventListener('DOMContentLoaded', renderContacts);

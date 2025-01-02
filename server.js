@@ -128,20 +128,28 @@ app.get('/contacts', (req, res) => {
 });
 
 // Ruta para eliminar un contacto
-app.delete('/delete/:id', (req, res) => {
+// Ruta para eliminar un contacto
+app.delete('/contacts/delete/:id', (req, res) => {
     const { id } = req.params;
     const stmt = db.prepare('DELETE FROM contacts WHERE id = ?');
     stmt.run(id, function (err) {
         if (err) {
-            res.status(500).json({ error: err.message });
-        } else {
-            res.status(200).json({ message: 'Contacto eliminado' });
+            return res.status(500).json({ error: err.message });
         }
+        
+        // Obtener los contactos actualizados después de eliminar
+        db.all('SELECT * FROM contacts', [], (err, rows) => {
+            if (err) {
+                return res.status(500).json({ error: 'Error al obtener los contactos' });
+            }
+            res.json(rows); // Devuelve los contactos restantes después de eliminar el contacto
+        });
     });
 });
 
+
 // Ruta para editar un contacto
-app.put('/edit/:id', validateContact, (req, res) => {
+app.put('/contacts/edit/:id', validateContact, (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, notas, categoria } = req.body;
 

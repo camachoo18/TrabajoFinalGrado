@@ -1,4 +1,9 @@
 function renderContacts(contacts) {
+    if (!Array.isArray(contacts)) {
+        console.error("Contacts no es un array", contacts);
+        return;
+    }
+
     const tableBody = document.querySelector('#contactList tbody');
     if (!tableBody) {
         console.error('Elemento de la tabla no encontrado');

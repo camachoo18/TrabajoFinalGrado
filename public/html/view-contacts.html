@@ -31,6 +31,22 @@
                 <!-- Los contactos se agregarán aquí dinámicamente -->
             </tbody>
         </table>
+        <!-- Formulario de edición -->
+        <form id="editForm" style="display: none;">
+            <input type="text" id="editNombre" placeholder="Nombre" required>
+            <input type="text" id="editTelefono" placeholder="Teléfono" required>
+            <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
+            <textarea id="editNotas" placeholder="Notas"></textarea>
+            <select id="editCategoria" required>
+                <option value="Trabajo">Trabajo</option>
+                <option value="Amigos">Amigos</option>
+                <option value="Familia">Familia</option>
+                <option value="Sin Categoría">Sin Categoría</option>
+                <option value="Otra">Otra</option>
+            </select>
+            <button type="submit" id="saveEditButton" >Actualizar Contacto</button>
+        </form>
+
 
         <!-- Navegación hacia la página de agregar contacto -->
         <div class="navigation">
@@ -39,9 +55,9 @@
     </div>
 
     <!-- Cargar los archivos JavaScript -->
-    <script src="/js/uiHelper.js"></script> <!-- Para feedback -->
     <script src="/js/contactManager.js"></script> <!-- Para CRUD -->
-    <script src="/js/filterManager.js"></script> <!-- Para búsqueda -->
     <script src="/js/viewContacts.js"></script> <!-- Para cargar los contactos -->
+    <script src="/js/filterManager.js"></script> <!-- Para búsqueda -->
+    <script src="/js/uiHelper.js"></script> <!-- Para feedback -->
 </body>
 </html>
