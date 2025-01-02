@@ -65,38 +65,6 @@ async function saveEdits(contactId) {
 }
 
 
-
-// Función para guardar los cambios de un contacto editado
-async function saveContact(id, updatedContact, row) {
-    try {
-        const response = await fetch(`/edit/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedContact),
-        });
-
-        if (response.ok) {
-            const cells = row.querySelectorAll('td');
-            // Volver al modo de solo lectura
-            cells[0].textContent = updatedContact.nombre;
-            cells[1].textContent = updatedContact.telefono;
-            cells[2].textContent = updatedContact.email;
-            cells[3].textContent = updatedContact.notas;
-            cells[4].textContent = updatedContact.categoria;
-
-            row.querySelector('.edit').textContent = 'Editar';
-            row.classList.remove('editing');
-            showFeedback('Contacto actualizado correctamente');
-        } else {
-            const error = await response.json();
-            showFeedback(error.message || 'Error al actualizar el contacto', false);
-        }
-    } catch (err) {
-        showFeedback(`Error al guardar contacto: ${err.message}`, false);
-    }
-}
-
-
 // Verificar si un teléfono ya está registrado
 async function isDuplicatePhone(phone) {
     try {
@@ -187,8 +155,6 @@ async function loadContacts() {
     }
 }
 
-
-
 // Función para agregar un contacto
 document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -238,8 +204,6 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
         showFeedback(responseBody.error || 'Error al agregar contacto', false);
     }
 });
-
-
 
 
 // Editar un contacto (mostrar datos en el formulario)
@@ -298,9 +262,6 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
 });
 
 
-
-
-// Función para eliminar un contacto
 // Función para eliminar un contacto
 function deleteContact(contactId) {
     fetch(`/contacts/delete/${contactId}`, {
