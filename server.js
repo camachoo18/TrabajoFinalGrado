@@ -113,6 +113,23 @@ function validateContact(req, res, next) {
     next(); // Continuar si todo es válido
 }
 
+// Filtrar contactos por categoría
+app.get('/contacts/filter', (req, res) => {
+    const categoria = req.query.categoria;
+    let query = 'SELECT * FROM contacts';
+
+    if (categoria) {
+        query += ` WHERE categoria = ?`;
+    }
+
+    db.all(query, [categoria], (err, rows) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: 'Error al consultar la base de datos' });
+        }
+        res.json(rows); // Devolver los contactos filtrados
+    });
+});
 
 // Ruta para obtener todos los contactos
 app.get('/contacts', (req, res) => {

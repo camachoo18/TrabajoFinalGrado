@@ -14,7 +14,17 @@
         <div id="searchBar">
             <input type="text" id="searchInput" placeholder="Buscar contactos...">
         </div>
-
+        <div id="categoryFilter">
+            <label for="filtroCategoria">Filtrar por categoría:</label>
+            <select id="filtroCategoria">
+                <option value="">Todas las categorías</option>
+                <option value="Amigos">Amigos</option>
+                <option value="Familia">Familia</option>
+                <option value="Trabajo">Trabajo</option>
+                <option value="Sin categoría">Sin categoría</option>
+                <option value="Otra">Otra</option>
+            </select>
+        </div>
         <!-- Tabla para mostrar los contactos -->
         <table id="contactList">
             <thead>
