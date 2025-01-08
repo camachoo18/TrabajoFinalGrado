@@ -31,9 +31,6 @@ app.get('/contacts/search', (req, res) => {
 });
 
 
-
-
-
 // Ruta para agregar una nueva categoría
 app.post('/categories/add', (req, res) => {
     const { categoria } = req.body;
@@ -65,7 +62,6 @@ app.post('/categories/add', (req, res) => {
 });
 
 // Ruta para agregar un nuevo contacto con middleware de validación
-// Endpoint para agregar contacto
 app.post('/add', validateContact, (req, res) => {
     const { nombre, telefono, email, notas, categoria } = req.body;
 
@@ -105,13 +101,39 @@ function validateContact(req, res, next) {
         return res.status(400).json({ error: 'Nombre, teléfono, email y categoría son obligatorios' });
     }
 
+    // Validar que el nombre tenga al menos 2 caracteres
+    if (nombre.length < 2) {
+        return res.status(400).json({ error: 'El nombre debe tener al menos 2 caracteres' });
+    }
+
+    // Validar que el nombre no contenga etiquetas HTML o JavaScript
+    const scriptRegex = /<script[\s\S]*?>[\s\S]*?<\/script>/gi; // Detecta etiquetas <script>
+    const htmlRegex = /<\/?[a-z][\s\S]*>/i; // Detecta cualquier etiqueta HTML
+    if (scriptRegex.test(nombre) || htmlRegex.test(nombre)) {
+        return res.status(400).json({ error: 'El nombre no puede contener etiquetas HTML o código malicioso' });
+    }
+
     // Validar que el teléfono tenga exactamente 9 dígitos numéricos
     if (!/^\d{9}$/.test(telefono)) {
         return res.status(400).json({ error: 'El teléfono debe tener exactamente 9 dígitos' });
     }
 
+    // Validar que el correo electrónico tenga un formato válido
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'El correo electrónico no tiene un formato válido' });
+    }
+
+    // Validar que la categoría sea una de las permitidas
+    const allowedCategories = ['Familia', 'Amigos', 'Trabajo', 'Otra']; // Cambia según tu lógica
+    if (!allowedCategories.includes(categoria)) {
+        return res.status(400).json({ error: `La categoría debe ser una de las siguientes: ${allowedCategories.join(', ')}` });
+    }
+
     next(); // Continuar si todo es válido
 }
+
+
 
 // Filtrar contactos por categoría
 app.get('/contacts/filter', (req, res) => {

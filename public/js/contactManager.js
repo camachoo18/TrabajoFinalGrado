@@ -39,6 +39,29 @@ function toggleEditMode(row, contactId) {
 }
 
 
+function validateContact(contact) {
+    // Validar que el nombre no esté vacío
+    if (!contact.nombre.trim()) return 'El nombre no puede estar vacío.';
+
+    // Validar que el nombre no contenga etiquetas HTML o JavaScript
+    const scriptRegex = /<script[\s\S]*?>[\s\S]*?<\/script>/gi; // Detecta etiquetas <script>
+    const htmlRegex = /<\/?[a-z][\s\S]*>/i; // Detecta cualquier etiqueta HTML
+    if (scriptRegex.test(contact.nombre) || htmlRegex.test(contact.nombre)) {
+        return 'El nombre no puede contener etiquetas HTML o código malicioso.';
+    }
+
+    // Validar que el teléfono tenga 9 dígitos
+    if (!/^\d{9}$/.test(contact.telefono)) return 'El teléfono debe tener 9 dígitos.';
+
+    // Validar que el correo tenga un formato válido
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return 'El correo electrónico no es válido.';
+
+    // Validar que la categoría no esté vacía
+    if (!contact.categoria.trim()) return 'Debe seleccionar una categoría.';
+
+    return null; // Devuelve null si todo está bien
+}
+
 async function saveEdits(contactId) {
     const updatedContact = {
         nombre: document.querySelector('#editNombre').value,
@@ -47,6 +70,12 @@ async function saveEdits(contactId) {
         notas: document.querySelector('#editNotas').value,
         categoria: document.querySelector('#editCategoria').value,
     };
+
+    const validationError = validateContact(updatedContact);
+    if (validationError) {
+        showFeedback(validationError, false);
+        return; // Detener el flujo si hay un error de validación
+    }
 
     const response = await fetch(`/contacts/edit/${contactId}`, {
         method: 'PUT',
@@ -60,9 +89,11 @@ async function saveEdits(contactId) {
         showFeedback('Contacto actualizado correctamente');
         renderContacts(); // Recargar la lista de contactos
     } else {
-        showFeedback('Tienes que rellenar los datos correctamente', false);
+        showFeedback('Error al actualizar el contacto', false);
     }
 }
+
+
 
 
 // Verificar si un teléfono ya está registrado
@@ -190,6 +221,13 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     // Crear el contacto
     const contact = { nombre, telefono, email, notas, categoria: nuevaCategoria };
 
+    // Validar contacto
+    const validationError = validateContact(contact);
+     if (validationError) {
+       showFeedback(validationError, false);
+         return; // Detener el flujo si hay un error de validación
+    }
+
     // Enviar el contacto al backend
     const response = await fetch('/add', {
         method: 'POST',
@@ -231,7 +269,7 @@ async function editContact(id) {
     }
 }
 
-// Función para guardar los cambios en el contacto
+// Función para guardar los cambios en el contacto despues de editar
 document.getElementById('editForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -243,6 +281,13 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
     const notas = document.getElementById('editNotas').value.trim();
 
     const contact = { nombre, telefono, email, categoria, notas };
+
+    // Validar los datos antes de enviar
+    const validationError = validateContact(contact);
+    if (validationError) {
+        showFeedback(validationError, false);
+        return; // Detener si hay un error de validación
+    }
 
     try {
         const response = await fetch(`/contacts/edit/${id}`, {
@@ -263,6 +308,7 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 });
+
 
 
 
