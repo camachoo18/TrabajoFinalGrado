@@ -24,5 +24,33 @@
     <!-- Solo necesitas el archivo dark-mode.js -->
     <script src="/js/dark-mode.js"></script>
     <script src="/js/auth.js"></script>
+    <script>
+        // Verificar si el usuario está autenticado al cargar la página
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const response = await fetch('/isAuthenticated', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        // El usuario no está autenticado, redirigir a la página de inicio
+                        window.location.href = '/';
+                    }
+                } else {
+                    // No hay token, redirigir a la página de inicio
+                    window.location.href = '/';
+                }
+            } catch (err) {
+                console.error('Error al verificar autenticación:', err);
+                window.location.href = '/';
+            }
+        });
+
+        // Redirigir a logout.html al hacer clic en el botón de cerrar sesión
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            window.location.href = '/html/logout.html';
+        });
+    </script>
 </body>
 </html>

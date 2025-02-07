@@ -23,16 +23,53 @@ nunjucks.configure('public/html', {
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Acceso no autorizado' });
+    if (!token) {
+        return res.status(401).json({ error: 'No autenticado' }); // Enviar un error 401 si no hay token
+    }
 
     jwt.verify(token, SECRET_KEY, (err, user) => {
-        if (err) return res.status(403).json({ error: 'Token inválido' });
+        if (err) {
+            return res.status(403).json({ error: 'Token inválido' }); // Enviar un error 403 si el token es inválido
+        }
         req.user = user;
         next();
     });
 }
 
-// Ruta para buscar contactos
+// Ruta para servir la página de inicio
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'home.html'));
+});
+
+// Ruta para servir la página de registro
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
+});
+
+// Ruta para servir la página de inicio de sesión
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
+});
+
+// Rutas protegidas para servir las páginas de la aplicación
+app.get('/html/index.html', authenticateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
+});
+
+app.get('/html/view-contacts.html', authenticateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'view-contacts.html'));
+});
+
+app.get('/html/add-contact.html', authenticateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'add-contact.html'));
+});
+
+// Ruta para verificar si el usuario está autenticado
+app.get('/isAuthenticated', authenticateToken, (req, res) => {
+    res.status(200).json({ authenticated: true });
+});
+
+// Rutas protegidas para la API
 app.get('/contacts/search', authenticateToken, (req, res) => {
     const query = req.query.q || ''; // Obtén la query de búsqueda (si no hay, usa una cadena vacía)
     const sql = `
@@ -54,7 +91,7 @@ app.get('/contacts/search', authenticateToken, (req, res) => {
         }
     });
 });
-// Ruta para obtener todas las categorías únicas
+
 app.get('/categories', authenticateToken, (req, res) => {
     const query = 'SELECT DISTINCT categoria FROM contacts';
     db.all(query, [], (err, rows) => {
@@ -68,7 +105,6 @@ app.get('/categories', authenticateToken, (req, res) => {
     });
 });
 
-// Ruta para agregar una nueva categoría
 app.post('/categories/add', authenticateToken, (req, res) => {
     const { categoria } = req.body;
 
@@ -98,7 +134,6 @@ app.post('/categories/add', authenticateToken, (req, res) => {
     });
 });
 
-// Ruta para agregar un nuevo contacto con middleware de validación
 app.post('/add', authenticateToken, validateContact, (req, res) => {
     const { nombre, telefono, email, notas, categoria } = req.body;
 
@@ -122,6 +157,7 @@ app.post('/add', authenticateToken, validateContact, (req, res) => {
         });
     });
 });
+
 // Middleware para validar datos del contacto
 function validateContact(req, res, next) {
     const { nombre, telefono, email, categoria } = req.body;
@@ -161,7 +197,7 @@ function validateContact(req, res, next) {
 
     next(); // Continuar si todo es válido
 }
-// Filtrar contactos por categoría
+
 app.get('/contacts/filter', authenticateToken, (req, res) => {
     const categoria = req.query.categoria;
     let query = 'SELECT * FROM contacts';
@@ -181,7 +217,6 @@ app.get('/contacts/filter', authenticateToken, (req, res) => {
     });
 });
 
-// Ruta para obtener todos los contactos
 app.get('/contacts', authenticateToken, (req, res) => {
     const query = 'SELECT * FROM contacts';
     db.all(query, [], (err, rows) => {
@@ -194,7 +229,6 @@ app.get('/contacts', authenticateToken, (req, res) => {
     });
 });
 
-// Ruta para eliminar un contacto
 app.delete('/contacts/delete/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     const stmt = db.prepare('DELETE FROM contacts WHERE id = ?');
@@ -216,7 +250,6 @@ app.delete('/contacts/delete/:id', authenticateToken, (req, res) => {
     });
 });
 
-// Ruta para editar un contacto
 app.put('/contacts/edit/:id', authenticateToken, validateContact, (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, notas, categoria } = req.body;
@@ -231,7 +264,6 @@ app.put('/contacts/edit/:id', authenticateToken, validateContact, (req, res) => 
     });
 });
 
-// Ruta para obtener un contacto específico por ID
 app.get('/contacts/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     db.get('SELECT * FROM contacts WHERE id = ?', [id], (err, row) => {
@@ -285,21 +317,6 @@ app.post('/login', (req, res) => {
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
         res.json({ token });
     });
-});
-
-// Servir la nueva página de inicio
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'home.html'));
-});
-
-// Servir la página de registro
-app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
-});
-
-// Servir la página de inicio de sesión
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
 });
 
 app.listen(port, () => {

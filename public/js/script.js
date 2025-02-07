@@ -7,9 +7,6 @@ function showFeedback(message, success = true) {
     setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
 
-
-
-
 // Función para cargar las categorías en los selects
 function loadCategories() {
     // Obtener los selects de categoría
@@ -35,10 +32,6 @@ function loadCategories() {
         categorySelectAddContact.appendChild(option.cloneNode(true)); // Añadir al formulario de agregar contacto
     });
 }
-
-
-
-
 
 // Manejar el cambio de categoría (nueva categoría)
 document.getElementById('categoria')?.addEventListener('change', function () {
@@ -70,6 +63,7 @@ async function addCategory(name) {
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
+
 // Función para agregar un contacto
 document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -177,54 +171,7 @@ async function loadContacts() {
         const response = await fetch('/contacts');
         if (response.ok) {
             const contacts = await response.json();
-            
-            
             renderContacts(contacts);
-            const tableBody = document.querySelector('#contactList tbody');
-            if (!tableBody) {
-                console.error('Elemento de la tabla no encontrado');
-                return;
-            }
-
-            tableBody.innerHTML = ''; // Limpia el contenido actual
-
-            contacts.forEach(contact => {
-                const row = document.createElement('tr');
-                row.dataset.id = contact.id; // Guardar el ID en la fila
-
-                const nombreCell = document.createElement('td');
-                nombreCell.textContent = contact.nombre;
-                row.appendChild(nombreCell);
-
-                const telefonoCell = document.createElement('td');
-                telefonoCell.textContent = contact.telefono;
-                row.appendChild(telefonoCell);
-
-                const emailCell = document.createElement('td');
-                emailCell.textContent = contact.email;
-                row.appendChild(emailCell);
-
-                const notasCell = document.createElement('td');
-                notasCell.textContent = contact.notas;
-                row.appendChild(notasCell);
-
-                const actionsCell = document.createElement('td');
-
-                const editButton = document.createElement('button');
-                editButton.textContent = 'Editar';
-                editButton.className = 'edit';
-                editButton.onclick = () => toggleEditMode(row, contact.id);
-                actionsCell.appendChild(editButton);
-
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Eliminar';
-                deleteButton.className = 'delete';
-                deleteButton.onclick = () => deleteContact(contact.id);
-                actionsCell.appendChild(deleteButton);
-
-                row.appendChild(actionsCell);
-                tableBody.appendChild(row);
-            });
         } else {
             showFeedback('Error al cargar contactos', false);
         }
@@ -265,81 +212,81 @@ function validateEmailInput(input) {
     }
 }
 
-    // Llamar a la función de validación cada vez que el usuario escriba
-    document.getElementById('editEmail')?.addEventListener('input', function () {
-        validateEmailInput(this);
-    });
+// Llamar a la función de validación cada vez que el usuario escriba
+document.getElementById('editEmail')?.addEventListener('input', function () {
+    validateEmailInput(this);
+});
 
-    // Cambia vista edicion
-    function toggleEditMode(row, id) {
-        const isEditing = row.classList.contains('editing');
-        const cells = row.querySelectorAll('td');
+// Cambia vista edicion
+function toggleEditMode(row, id) {
+    const isEditing = row.classList.contains('editing');
+    const cells = row.querySelectorAll('td');
 
-        if (isEditing) {
-            // Obtener los valores de los campos editados
-            const updatedContact = {
-                nombre: cells[0].querySelector('input').value.trim(),
-                telefono: cells[1].querySelector('input').value.trim(),
-                email: cells[2].querySelector('input').value.trim(),
-                notas: cells[3].querySelector('input').value.trim(),
-            };
+    if (isEditing) {
+        // Obtener los valores de los campos editados
+        const updatedContact = {
+            nombre: cells[0].querySelector('input').value.trim(),
+            telefono: cells[1].querySelector('input').value.trim(),
+            email: cells[2].querySelector('input').value.trim(),
+            notas: cells[3].querySelector('input').value.trim(),
+        };
 
-            // Validar que los campos no estén vacíos
-            if (!updatedContact.nombre || !updatedContact.telefono || !updatedContact.email) {
-                showFeedback('Los campos de nombre, teléfono y correo son obligatorios.', false);
-                return;  // No guardar si hay campos vacíos
-            }
+        // Validar que los campos no estén vacíos
+        if (!updatedContact.nombre || !updatedContact.telefono || !updatedContact.email) {
+            showFeedback('Los campos de nombre, teléfono y correo son obligatorios.', false);
+            return;  // No guardar si hay campos vacíos
+        }
 
-            // Validación del correo
-            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            if (!emailRegex.test(updatedContact.email)) {
-                showFeedback('El correo electrónico debe tener el formato correcto: ejemplo@dominio.com.', false);
-                return;  // No guardar si el correo no es válido
-            }
+        // Validación del correo
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(updatedContact.email)) {
+            showFeedback('El correo electrónico debe tener el formato correcto: ejemplo@dominio.com.', false);
+            return;  // No guardar si el correo no es válido
+        }
 
-            saveContact(id, updatedContact, row);
+        saveContact(id, updatedContact, row);
+    } else {
+        // Cambiar a modo edición
+        cells[0].innerHTML = `<input type="text" value="${cells[0].textContent}">`;
+        cells[1].innerHTML = `<input type="text" value="${cells[1].textContent}" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9);">`;
+        cells[2].innerHTML = `<input type="email" value="${cells[2].textContent}" required>`;  // Asegúrate de mantener el tipo "email"
+        cells[3].innerHTML = `<input type="text" value="${cells[3].textContent}">`;
+
+        const editButton = row.querySelector('.edit');
+        editButton.textContent = 'Guardar';
+    }
+    
+    row.classList.toggle('editing');
+}
+
+// Guarda los datos editados en el backend
+async function saveContact(id, updatedContact, row) {
+    try {
+        const response = await fetch(`/edit/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedContact),
+        });
+
+        if (response.ok) {
+            const cells = row.querySelectorAll('td');
+            // Volver al modo de solo lectura
+            cells[0].textContent = updatedContact.nombre;
+            cells[1].textContent = updatedContact.telefono;
+            cells[2].textContent = updatedContact.email;
+            cells[3].textContent = updatedContact.notas;
+
+            row.querySelector('.edit').textContent = 'Editar';
+            row.classList.remove('editing');
+            showFeedback('Contacto actualizado correctamente');
         } else {
-            // Cambiar a modo edición
-            cells[0].innerHTML = `<input type="text" value="${cells[0].textContent}">`;
-            cells[1].innerHTML = `<input type="text" value="${cells[1].textContent}" maxlength="9" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9);">`;
-            cells[2].innerHTML = `<input type="email" value="${cells[2].textContent}" required>`;  // Asegúrate de mantener el tipo "email"
-            cells[3].innerHTML = `<input type="text" value="${cells[3].textContent}">`;
-
-            const editButton = row.querySelector('.edit');
-            editButton.textContent = 'Guardar';
+            const error = await response.json();
+            showFeedback(error.message || 'Error al actualizar el contacto', false);
         }
-        
-        row.classList.toggle('editing');
+    } catch (err) {
+        showFeedback(`Error al guardar contacto: ${err.message}`, false);
     }
-
-    // Guarda los datos editados en el backend
-    async function saveContact(id, updatedContact, row) {
-        try {
-            const response = await fetch(`/edit/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedContact),
-            });
-
-            if (response.ok) {
-                const cells = row.querySelectorAll('td');
-                // Volver al modo de solo lectura
-                cells[0].textContent = updatedContact.nombre;
-                cells[1].textContent = updatedContact.telefono;
-                cells[2].textContent = updatedContact.email;
-                cells[3].textContent = updatedContact.notas;
-
-                row.querySelector('.edit').textContent = 'Editar';
-                row.classList.remove('editing');
-                showFeedback('Contacto actualizado correctamente');
-            } else {
-                const error = await response.json();
-                showFeedback(error.message || 'Error al actualizar el contacto', false);
-            }
-        } catch (err) {
-            showFeedback(`Error al guardar contacto: ${err.message}`, false);
-        }
-    }
+}
 
 // Función para verificar si el teléfono ya está registrado
 async function isDuplicatePhone(phone) {
@@ -350,7 +297,6 @@ async function isDuplicatePhone(phone) {
     }
     return false;
 }
-
 
 // Eliminar un contacto
 async function deleteContact(id) {
@@ -471,47 +417,16 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
     }
 });
 
-
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('loginUsername').value;
-    const password = document.getElementById('loginPassword').value;
-
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        const data = await response.json();
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            alert('Inicio de sesión exitoso');
-        } else {
-            alert(data.error);
-        }
-    } catch (err) {
-        alert('Error al iniciar sesión');
-    }
-});
-
-
-
-
 // Cargar contactos al iniciar la página
 document.addEventListener('DOMContentLoaded', () => {
     // Si estamos en add-contact.html (presencia del elemento 'categoria')
     if (document.getElementById('categoria')) {
-        
         loadCategories('categoria'); // Carga las categorías para el formulario de agregar
     }
 
     // Si estamos en view-contact.html (presencia del elemento 'filtroCategoria' o 'contactList')
     if (document.getElementById('filtroCategoria') || document.querySelector('#contactList tbody')) {
-        
         loadCategories('filtroCategoria'); // Carga las categorías para el filtro
         loadContacts(); // Carga los contactos en la tabla
     }
 });
-
-
