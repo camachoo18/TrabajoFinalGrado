@@ -2,7 +2,10 @@
 document.getElementById('searchInput')?.addEventListener('input', async (e) => {
     const query = e.target.value; // Obtener el valor del campo de búsqueda
     try {
-        const response = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (response.ok) {
             const contacts = await response.json();
             renderContacts(contacts);
@@ -61,8 +64,6 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
                 });
                 actionsCell.appendChild(deleteButton);
 
-                
-
                 row.appendChild(actionsCell);
                 tableBody.appendChild(row);
             });
@@ -76,12 +77,18 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
 });
 
 // Filtrar por categoría
-// Filtrar por categoría
 document.getElementById('filtroCategoria')?.addEventListener('change', async (e) => {
     const categoria = e.target.value; // Obtener el valor de la categoría seleccionada
     try {
+        const token = localStorage.getItem('token');
+        let url = '/contacts/filter';
+        if (categoria && categoria !== 'Todas') {
+            url += `?categoria=${encodeURIComponent(categoria)}`;
+        }
         // Hacer la solicitud al backend para obtener los contactos filtrados por categoría
-        const response = await fetch(`/contacts/filter?categoria=${encodeURIComponent(categoria)}`);
+        const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (response.ok) {
             const contacts = await response.json();
 
@@ -151,4 +158,3 @@ document.getElementById('filtroCategoria')?.addEventListener('change', async (e)
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 });
-

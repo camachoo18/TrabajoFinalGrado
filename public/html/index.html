@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda de Contactos</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <div class="container">
@@ -14,13 +14,15 @@
         <div class="navigation">
             <a href="/html/add-contact.html">Agregar Nuevo Contacto</a>
             <a href="/html/view-contacts.html">Ver Contactos</a>
+            <button id="logoutButton">Cerrar Sesión</button>
         </div>
         
         <!-- Botón para alternar entre modo claro y oscuro -->
         <button id="toggle-dark-mode">Modo Oscuro</button>
-
     </div>
+    
     <!-- Solo necesitas el archivo dark-mode.js -->
-    <script src="js/dark-mode.js"></script>
+    <script src="/js/dark-mode.js"></script>
+    <script src="/js/auth.js"></script>
 </body>
 </html>

@@ -1,14 +1,39 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const db = require('./database'); // Importa la base de datos desde el archivo database.js
 const app = express();
 const port = 3000;
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const nunjucks = require('nunjucks');
+
+const SECRET_KEY = process.env.SECRET_KEY;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Configurar Nunjucks
+nunjucks.configure('public/html', {
+    autoescape: true,
+    express: app
+});
+
+// Middleware para verificar el token
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Acceso no autorizado' });
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.status(403).json({ error: 'Token inválido' });
+        req.user = user;
+        next();
+    });
+}
+
 // Ruta para buscar contactos
-app.get('/contacts/search', (req, res) => {
+app.get('/contacts/search', authenticateToken, (req, res) => {
     const query = req.query.q || ''; // Obtén la query de búsqueda (si no hay, usa una cadena vacía)
     const sql = `
         SELECT * FROM contacts
@@ -29,10 +54,22 @@ app.get('/contacts/search', (req, res) => {
         }
     });
 });
-
+// Ruta para obtener todas las categorías únicas
+app.get('/categories', authenticateToken, (req, res) => {
+    const query = 'SELECT DISTINCT categoria FROM contacts';
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            res.status(500).send('Error al obtener las categorías.');
+        } else {
+            const categories = rows.map(row => row.categoria);
+            res.json(categories); // Devuelve la lista de categorías únicas al frontend
+        }
+    });
+});
 
 // Ruta para agregar una nueva categoría
-app.post('/categories/add', (req, res) => {
+app.post('/categories/add', authenticateToken, (req, res) => {
     const { categoria } = req.body;
 
     if (!categoria) {
@@ -62,7 +99,7 @@ app.post('/categories/add', (req, res) => {
 });
 
 // Ruta para agregar un nuevo contacto con middleware de validación
-app.post('/add', validateContact, (req, res) => {
+app.post('/add', authenticateToken, validateContact, (req, res) => {
     const { nombre, telefono, email, notas, categoria } = req.body;
 
     // Verificar duplicados en la base de datos
@@ -75,23 +112,16 @@ app.post('/add', validateContact, (req, res) => {
             return res.status(400).json({ error: 'El número de teléfono ya está registrado' });
         }
 
-        // Verificar si la categoría es válida
-        if (!categoria || categoria.trim() === '') {
-            return res.status(400).json({ error: 'Categoría inválida' });
-        }
-
         // Insertar el contacto
         const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria) VALUES (?, ?, ?, ?, ?)');
         stmt.run(nombre, telefono, email, notas, categoria, function (err) {
             if (err) {
                 return res.status(500).json({ error: 'Error al agregar contacto' });
             }
-            res.status(200).json({ id: this.lastID });
+            res.status(200).json({ id: this.lastID, categoria }); // Devolver la categoría junto con el ID
         });
     });
 });
-
-
 // Middleware para validar datos del contacto
 function validateContact(req, res, next) {
     const { nombre, telefono, email, categoria } = req.body;
@@ -124,27 +154,25 @@ function validateContact(req, res, next) {
         return res.status(400).json({ error: 'El correo electrónico no tiene un formato válido' });
     }
 
-    // Validar que la categoría sea una de las permitidas
-    const allowedCategories = ['Familia', 'Amigos', 'Trabajo', 'Otra']; // Cambia según tu lógica
-    if (!allowedCategories.includes(categoria)) {
-        return res.status(400).json({ error: `La categoría debe ser una de las siguientes: ${allowedCategories.join(', ')}` });
+    // Validar que la categoría no esté vacía
+    if (!categoria.trim()) {
+        return res.status(400).json({ error: 'Debe seleccionar una categoría.' });
     }
 
     next(); // Continuar si todo es válido
 }
-
-
-
 // Filtrar contactos por categoría
-app.get('/contacts/filter', (req, res) => {
+app.get('/contacts/filter', authenticateToken, (req, res) => {
     const categoria = req.query.categoria;
     let query = 'SELECT * FROM contacts';
+    const params = [];
 
-    if (categoria) {
-        query += ` WHERE categoria = ?`;
+    if (categoria && categoria !== 'Todas') {
+        query += ' WHERE categoria = ?';
+        params.push(categoria);
     }
 
-    db.all(query, [categoria], (err, rows) => {
+    db.all(query, params, (err, rows) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Error al consultar la base de datos' });
@@ -154,7 +182,7 @@ app.get('/contacts/filter', (req, res) => {
 });
 
 // Ruta para obtener todos los contactos
-app.get('/contacts', (req, res) => {
+app.get('/contacts', authenticateToken, (req, res) => {
     const query = 'SELECT * FROM contacts';
     db.all(query, [], (err, rows) => {
         if (err) {
@@ -167,7 +195,7 @@ app.get('/contacts', (req, res) => {
 });
 
 // Ruta para eliminar un contacto
-app.delete('/contacts/delete/:id', (req, res) => {
+app.delete('/contacts/delete/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     const stmt = db.prepare('DELETE FROM contacts WHERE id = ?');
     stmt.run(id, function (err) {
@@ -188,9 +216,8 @@ app.delete('/contacts/delete/:id', (req, res) => {
     });
 });
 
-
 // Ruta para editar un contacto
-app.put('/contacts/edit/:id', validateContact, (req, res) => {
+app.put('/contacts/edit/:id', authenticateToken, validateContact, (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, notas, categoria } = req.body;
 
@@ -205,7 +232,7 @@ app.put('/contacts/edit/:id', validateContact, (req, res) => {
 });
 
 // Ruta para obtener un contacto específico por ID
-app.get('/contacts/:id', (req, res) => {
+app.get('/contacts/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
     db.get('SELECT * FROM contacts WHERE id = ?', [id], (err, row) => {
         if (err) {
@@ -218,9 +245,61 @@ app.get('/contacts/:id', (req, res) => {
     });
 });
 
-// Servir la página HTML
+// Ruta de registro
+app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username y password son obligatorios' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const stmt = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
+        stmt.run(username, hashedPassword, function (err) {
+            if (err) {
+                return res.status(500).json({ error: 'Error al registrar usuario' });
+            }
+            res.status(201).json({ message: 'Usuario registrado' });
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al registrar usuario' });
+    }
+});
+
+// Ruta de inicio de sesión
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username y password son obligatorios' });
+    }
+
+    const query = 'SELECT * FROM users WHERE username = ?';
+    db.get(query, [username], async (err, user) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error al buscar usuario' });
+        }
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ error: 'Credenciales incorrectas' });
+        }
+
+        const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ token });
+    });
+});
+
+// Servir la nueva página de inicio
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html', 'home.html'));
+});
+
+// Servir la página de registro
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
+});
+
+// Servir la página de inicio de sesión
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
 });
 
 app.listen(port, () => {

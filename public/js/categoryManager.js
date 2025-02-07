@@ -7,31 +7,52 @@ function showFeedback(message, success = true) {
     setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
 
-// Categorías estáticas
-const categories = ['Amigos', 'Familia', 'Trabajo', 'Sin categoria', 'Otra'];  // Añade aquí todas las categorías que necesites
+// Cargar categorías desde el servidor
+async function loadCategories() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/categories', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const categories = await response.json();
+            const categorySelect = document.getElementById('categoria');
+            const filterSelect = document.getElementById('filtroCategoria');
 
-// Cargar categorías
-function loadCategories() {
-    const categorySelect = document.getElementById('categoria');
-    categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
+            if (categorySelect) {
+                categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
+            }
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="">Todas las categorías</option>';
+            }
 
-    categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category;
-        option.textContent = category;
-        categorySelect.appendChild(option);
-    });
-}
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                if (categorySelect) {
+                    categorySelect.appendChild(option);
+                }
+                if (filterSelect) {
+                    const filterOption = document.createElement('option');
+                    filterOption.value = category;
+                    filterOption.textContent = category;
+                    filterSelect.appendChild(filterOption);
+                }
+            });
 
-// Agregar nueva categoría
-function addCategory(categoryName) {
-    // Verificar si la categoría ya existe
-    if (categories.includes(categoryName)) {
-        showFeedback('La categoría ya existe.');
-    } else {
-        categories.push(categoryName);
-        showFeedback('Categoría agregada.');
-        loadCategories();  // Recarga las categorías después de agregar una nueva
+            // Añadir opción "Otra" al formulario de agregar contacto
+            if (categorySelect) {
+                const otherOption = document.createElement('option');
+                otherOption.value = 'Otra';
+                otherOption.textContent = 'Otra';
+                categorySelect.appendChild(otherOption);
+            }
+        } else {
+            showFeedback('Error al cargar categorías', false);
+        }
+    } catch (err) {
+        showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 

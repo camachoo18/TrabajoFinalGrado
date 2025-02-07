@@ -1,3 +1,10 @@
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('#contactList tbody')) {
+        loadContacts();
+        loadCategories(); // Cargar categorías al iniciar la página
+    }
+});
+
 // Función para mostrar feedback
 function showFeedback(message, success = true) {
     const feedback = document.createElement('div');
@@ -10,7 +17,10 @@ function showFeedback(message, success = true) {
 // Función para alternar el modo de edición
 function toggleEditMode(row, contactId) {
     // Realizar una solicitud al servidor para obtener los datos del contacto por su ID
-    fetch(`/contacts/${contactId}`)
+    const token = localStorage.getItem('token');
+    fetch(`/contacts/${contactId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
         .then(response => response.json())
         .then(contact => {
             if (!contact) {
@@ -37,7 +47,6 @@ function toggleEditMode(row, contactId) {
             console.error('Error al obtener el contacto:', error);
         });
 }
-
 
 function validateContact(contact) {
     // Validar que el nombre no esté vacío
@@ -77,117 +86,111 @@ async function saveEdits(contactId) {
         return; // Detener el flujo si hay un error de validación
     }
 
+    const token = localStorage.getItem('token');
     const response = await fetch(`/contacts/edit/${contactId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(updatedContact),
     });
 
     if (response.ok) {
         showFeedback('Contacto actualizado correctamente');
-        renderContacts(); // Recargar la lista de contactos
+        loadContacts(); // Recargar la lista de contactos
     } else {
         showFeedback('Error al actualizar el contacto', false);
     }
 }
 
-
-
-
 // Verificar si un teléfono ya está registrado
 async function isDuplicatePhone(phone) {
     try {
-        const response = await fetch('/contacts');
+        const token = localStorage.getItem('token');
+        const response = await fetch('/contacts', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (response.ok) {
             const contacts = await response.json();
             return contacts.some(contact => contact.telefono.trim() === phone.trim());
         }
     } catch (err) {
-        showFeedback(`Error de conexión1: ${err.message}`, false);
+        showFeedback(`Error de conexión: ${err.message}`, false);
     }
     return false;
 }
 
-
-
+// Función para cargar contactos
 async function loadContacts() {
-    console.log("Cargando contactos...");
     try {
-        const response = await fetch('/contacts');
+        const token = localStorage.getItem('token');
+        const response = await fetch('/contacts', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (response.ok) {
             const contacts = await response.json();
-            console.log("Contactos cargados:", contacts);
-            
-            const tableBody = document.querySelector('#contactsTableBody');
-            if (!tableBody) {
-                console.error('Elemento de la tabla no encontrado');
-                return;
-            }
-
-            tableBody.innerHTML = ''; // Limpiar el contenido actual
-
-            contacts.forEach(contact => {
-                const row = document.createElement('tr');
-                row.dataset.id = contact.id; // Guardar el ID en la fila
-
-                const nombreCell = document.createElement('td');
-                nombreCell.textContent = contact.nombre;
-                row.appendChild(nombreCell);
-
-                const telefonoCell = document.createElement('td');
-                telefonoCell.textContent = contact.telefono;
-                row.appendChild(telefonoCell);
-
-                const emailCell = document.createElement('td');
-                emailCell.textContent = contact.email;
-                row.appendChild(emailCell);
-
-                const categoriaCell = document.createElement('td');
-                categoriaCell.textContent = contact.categoria;
-                row.appendChild(categoriaCell);
-
-                const notasCell = document.createElement('td');
-                notasCell.textContent = contact.notas;
-                row.appendChild(notasCell);
-
-                const actionsCell = document.createElement('td');
-
-                const editButton = document.createElement('button');
-                editButton.textContent = 'Editar';
-                editButton.className = 'edit';
-                editButton.dataset.id = contact.id; // Añadir el ID al botón
-                editButton.addEventListener('click', () => {
-                    console.log('Edit button clicked for ID:', contact.id);
-                    toggleEditMode(row, contact.id);
-                });
-                actionsCell.appendChild(editButton);
-
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Eliminar';
-                deleteButton.className = 'delete';
-                deleteButton.dataset.id = contact.id; // Añadir el ID al botón
-                deleteButton.addEventListener('click', () => {
-                    console.log('Delete button clicked for ID:', contact.id);
-                    deleteContact(contact.id);
-                });
-                actionsCell.appendChild(deleteButton);
-
-                
-
-                row.appendChild(actionsCell);
-                tableBody.appendChild(row);
-            });
+            renderContacts(contacts);
         } else {
             showFeedback('Error al cargar contactos', false);
         }
     } catch (err) {
-        console.error('Error al cargar los contactos:', err);
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 
+// Función para renderizar contactos
+function renderContacts(contacts) {
+    const tableBody = document.querySelector('#contactList tbody');
+    if (!tableBody) {
+        console.error('Elemento de la tabla no encontrado');
+        return;
+    }
+
+    tableBody.innerHTML = ''; // Limpia el contenido actual
+
+    contacts.forEach(contact => {
+        const row = document.createElement('tr');
+        row.dataset.id = contact.id; // Guardar el ID en la fila
+
+        const nombreCell = document.createElement('td');
+        nombreCell.textContent = contact.nombre;
+        row.appendChild(nombreCell);
+
+        const telefonoCell = document.createElement('td');
+        telefonoCell.textContent = contact.telefono;
+        row.appendChild(telefonoCell);
+
+        const emailCell = document.createElement('td');
+        emailCell.textContent = contact.email;
+        row.appendChild(emailCell);
+
+        const categoriaCell = document.createElement('td');
+        categoriaCell.textContent = contact.categoria;
+        row.appendChild(categoriaCell);
+
+        const notasCell = document.createElement('td');
+        notasCell.textContent = contact.notas;
+        row.appendChild(notasCell);
+
+        const actionsCell = document.createElement('td');
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Editar';
+        editButton.className = 'edit';
+        editButton.onclick = () => toggleEditMode(row, contact.id);
+        actionsCell.appendChild(editButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Eliminar';
+        deleteButton.className = 'delete';
+        deleteButton.onclick = () => deleteContact(contact.id);
+        actionsCell.appendChild(deleteButton);
+
+        row.appendChild(actionsCell);
+        tableBody.appendChild(row);
+    });
+}
 
 // Función para agregar un contacto
 document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
@@ -210,35 +213,33 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
         return;
     }
 
-    // Si el usuario selecciona "Otra", agregar nueva categoría
-    if (categoria === 'Otra' && nuevaCategoria) {
-        addCategory(nuevaCategoria);  // Agregar la categoría a la lista estática
-        nuevaCategoria = nuevaCategoria; // Usar la nueva categoría
-    } else {
-        nuevaCategoria = categoria; // Usar la categoría seleccionada
-    }
+    // Si el usuario selecciona "Otra", usar la nueva categoría
+    const categoriaFinal = (categoria === 'Otra' && nuevaCategoria) ? nuevaCategoria : categoria;
 
     // Crear el contacto
-    const contact = { nombre, telefono, email, notas, categoria: nuevaCategoria };
-
-    // Validar contacto
-    const validationError = validateContact(contact);
-     if (validationError) {
-       showFeedback(validationError, false);
-         return; // Detener el flujo si hay un error de validación
-    }
+    const contact = { nombre, telefono, email, notas, categoria: categoriaFinal };
 
     // Enviar el contacto al backend
+    const token = localStorage.getItem('token');
     const response = await fetch('/add', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(contact),
     });
 
     // Manejar respuesta
     if (response.ok) {
+        const responseBody = await response.json();
         loadContacts(); // Recargar lista de contactos
         showFeedback(`Contacto "${contact.nombre}" añadido correctamente`);
+
+        // Si se agregó una nueva categoría, recargar las categorías
+        if (categoria === 'Otra' && nuevaCategoria) {
+            loadCategories();
+        }
     } else {
         const responseBody = await response.json();
         console.error('Error al agregar contacto:', responseBody);
@@ -246,11 +247,13 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     }
 });
 
-
 // Editar un contacto (mostrar datos en el formulario)
 async function editContact(id) {
     try {
-        const response = await fetch(`/contacts/${id}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/contacts/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (response.ok) {
             const contact = await response.json();
             document.getElementById('editForm').dataset.id = contact.id;
@@ -265,12 +268,12 @@ async function editContact(id) {
             showFeedback('Error al cargar datos del contacto', false);
         }
     } catch (err) {
-        showFeedback(`Error de conexión4: ${err.message}`, false);
+        showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 
 // Función para guardar los cambios en el contacto despues de editar
-document.getElementById('editForm').addEventListener('submit', async (e) => {
+document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('editForm').dataset.id;
@@ -290,9 +293,13 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
     }
 
     try {
+        const token = localStorage.getItem('token');
         const response = await fetch(`/contacts/edit/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
             body: JSON.stringify(contact),
         });
 
@@ -309,31 +316,48 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
     }
 });
 
-
-
-
-
-// Función para eliminar un contacto
-function deleteContact(contactId) {
-    fetch(`/contacts/delete/${contactId}`, {
-        method: 'DELETE',
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            console.error('Error al eliminar el contacto:', data.error);
-            return;
+// Función para filtrar contactos por categoría
+async function filterContactsByCategory(categoria) {
+    try {
+        const token = localStorage.getItem('token');
+        let url = '/contacts/filter';
+        if (categoria && categoria !== 'Todas') {
+            url += `?categoria=${encodeURIComponent(categoria)}`;
         }
-
-        showFeedback('Contacto eliminado con éxito');
-        loadContacts(); // Aquí pasas los contactos actualizados a loadContacts
-    })
-    .catch(error => {
-        showFeedback('Error al eliminar el contacto:', error);
-    });
+        const response = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            const contacts = await response.json();
+            renderContacts(contacts);
+        } else {
+            showFeedback('Error al cargar contactos filtrados por categoría', false);
+        }
+    } catch (err) {
+        showFeedback(`Error de conexión: ${err.message}`, false);
+    }
 }
-
-
-
-document.addEventListener('DOMContentLoaded', loadContacts);
-
+// Función para eliminar un contacto
+async function deleteContact(id) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/contacts/delete/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+        const selectedCategory = document.getElementById('filtroCategoria').value;
+        if (selectedCategory && selectedCategory !== 'Todas') {
+            filterContactsByCategory(selectedCategory); // Volver a aplicar el filtro
+        } else {
+            loadContacts(); // Recargar todos los contactos si no hay filtro
+        }
+        showFeedback('Contacto eliminado correctamente');
+    } else {
+        showFeedback('Error al eliminar contacto', false);
+    }
+}
+// Filtrar por categoría
+document.getElementById('filtroCategoria')?.addEventListener('change', (e) => {
+    const categoria = e.target.value;
+    filterContactsByCategory(categoria);
+});

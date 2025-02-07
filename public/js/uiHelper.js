@@ -28,6 +28,10 @@ function renderContacts(contacts) {
         emailCell.textContent = contact.email;
         row.appendChild(emailCell);
 
+        const categoriaCell = document.createElement('td');
+        categoriaCell.textContent = contact.categoria;
+        row.appendChild(categoriaCell);
+
         const notasCell = document.createElement('td');
         notasCell.textContent = contact.notas;
         row.appendChild(notasCell);
@@ -37,7 +41,37 @@ function renderContacts(contacts) {
         const editButton = document.createElement('button');
         editButton.textContent = 'Editar';
         editButton.className = 'edit';
-        editButton.onclick = () => toggleEditMode(row, contact.id);
+        editButton.onclick = () => {
+            const token = localStorage.getItem('token');
+            fetch(`/contacts/${contact.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(response => response.json())
+                .then(contact => {
+                    if (!contact) {
+                        console.error('Contacto no encontrado');
+                        return;
+                    }
+
+                    // Cargar los datos del contacto en el formulario de edición
+                    document.querySelector('#editNombre').value = contact.nombre;
+                    document.querySelector('#editTelefono').value = contact.telefono;
+                    document.querySelector('#editEmail').value = contact.email;
+                    document.querySelector('#editNotas').value = contact.notas;
+                    document.querySelector('#editCategoria').value = contact.categoria;
+
+                    // Mostrar el formulario de edición
+                    document.querySelector('#editForm').style.display = 'block';
+
+                    // Guardar los cambios
+                    document.querySelector('#saveEditButton').onclick = () => {
+                        saveEdits(contact.id);
+                    };
+                })
+                .catch(error => {
+                    console.error('Error al obtener el contacto:', error);
+                });
+        };
         actionsCell.appendChild(editButton);
 
         const deleteButton = document.createElement('button');
