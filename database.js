@@ -19,7 +19,7 @@ db.run(`
         telefono TEXT NOT NULL UNIQUE,
         email TEXT NOT NULL,
         notas TEXT,
-        id_user INTEGER NOT NULL FOREIGN KEY REFERENCES users(id), // Relación con la tabla de usuarios
+       // id_user INTEGER NOT NULL FOREIGN KEY REFERENCES users(id), // Relación con la tabla de usuarios
         categoria TEXT NOT NULL CHECK (categoria IN ('Trabajo', 'Amigos', 'Familia', 'Sin Categoría', 'Otra'))
     );
 `, (err) => {
