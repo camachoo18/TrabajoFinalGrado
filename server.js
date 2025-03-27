@@ -29,8 +29,9 @@ function authenticateToken(req, res, next) {
 
     jwt.verify(token, SECRET_KEY, (err, user) => {
         if (err) {
-            return res.status(403).json({ error: 'Token inválido' }); // Enviar un error 403 si el token es inválido
+            return res.status(403).json({ error: 'Token inválido' });
         }
+        console.log('Usuario autenticado:', user); // Depuración
         req.user = user;
         next();
     });
@@ -136,10 +137,11 @@ app.post('/categories/add', authenticateToken, (req, res) => {
 
 app.post('/add', authenticateToken, validateContact, (req, res) => {
     const { nombre, telefono, email, notas, categoria } = req.body;
+    const userId = req.user.id; // Obtener el ID del usuario autenticado
 
     // Verificar duplicados en la base de datos
-    const duplicateCheckQuery = 'SELECT COUNT(*) AS count FROM contacts WHERE telefono = ?';
-    db.get(duplicateCheckQuery, [telefono], (err, row) => {
+    const duplicateCheckQuery = 'SELECT COUNT(*) AS count FROM contacts WHERE telefono = ? AND user_id = ?';
+    db.get(duplicateCheckQuery, [telefono, userId], (err, row) => {
         if (err) {
             return res.status(500).json({ error: 'Error al verificar duplicados' });
         }
@@ -148,8 +150,8 @@ app.post('/add', authenticateToken, validateContact, (req, res) => {
         }
 
         // Insertar el contacto
-        const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria) VALUES (?, ?, ?, ?, ?)');
-        stmt.run(nombre, telefono, email, notas, categoria, function (err) {
+        const stmt = db.prepare('INSERT INTO contacts (nombre, telefono, email, notas, categoria, user_id) VALUES (?, ?, ?, ?, ?, ?)');
+        stmt.run(nombre, telefono, email, notas, categoria, userId, function (err) {
             if (err) {
                 return res.status(500).json({ error: 'Error al agregar contacto' });
             }
@@ -218,50 +220,69 @@ app.get('/contacts/filter', authenticateToken, (req, res) => {
 });
 
 app.get('/contacts', authenticateToken, (req, res) => {
-    const query = 'SELECT * FROM contacts';
-    db.all(query, [], (err, rows) => {
+    const userId = req.user.id; // Obtener el ID del usuario autenticado
+    const query = 'SELECT * FROM contacts WHERE user_id = ?';
+    db.all(query, [userId], (err, rows) => {
         if (err) {
             console.error(err.message);
             res.status(500).send('Error al obtener los contactos.');
         } else {
-            res.json(rows); // Devuelve la lista de contactos al frontend
+            res.json(rows); // Devuelve la lista de contactos del usuario
         }
     });
 });
 
 app.delete('/contacts/delete/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
-    const stmt = db.prepare('DELETE FROM contacts WHERE id = ?');
-    stmt.run(id, function (err) {
+    const userId = req.user.id; // Obtener el ID del usuario autenticado
+
+    // Verificar que el contacto pertenece al usuario
+    const checkQuery = 'SELECT * FROM contacts WHERE id = ? AND user_id = ?';
+    db.get(checkQuery, [id, userId], (err, row) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-        } else {
-            // Obtener todos los contactos después de eliminar uno
-            const query = 'SELECT * FROM contacts';
-            db.all(query, [], (err, rows) => {
-                if (err) {
-                    console.error(err.message);
-                    res.status(500).send('Error al obtener los contactos.');
-                } else {
-                    res.json(rows); // Devuelve todos los contactos restantes
-                }
-            });
+            return res.status(500).json({ error: 'Error al verificar el contacto' });
         }
+        if (!row) {
+            return res.status(404).json({ error: 'Contacto no encontrado o no autorizado' });
+        }
+
+        // Eliminar el contacto
+        const stmt = db.prepare('DELETE FROM contacts WHERE id = ? AND user_id = ?');
+        stmt.run(id, userId, function (err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+            } else {
+                res.status(200).json({ message: 'Contacto eliminado' });
+            }
+        });
     });
 });
 
 app.put('/contacts/edit/:id', authenticateToken, validateContact, (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email, notas, categoria } = req.body;
+    const userId = req.user.id; // Obtener el ID del usuario autenticado
 
-    const stmt = db.prepare('UPDATE contacts SET nombre = ?, telefono = ?, email = ?, notas = ?, categoria = ? WHERE id = ?');
-    stmt.run(nombre, telefono, email, notas, categoria, id, function (err) {
+    // Verificar que el contacto pertenece al usuario
+    const checkQuery = 'SELECT * FROM contacts WHERE id = ? AND user_id = ?';
+db.get(checkQuery, [id, userId], (err, row) => {
+    if (err) {
+        return res.status(500).json({ error: 'Error al verificar el contacto' });
+    }
+    if (!row) {
+        //return res.status(404).json({ error: 'Contacto no encontrado o no autorizado' });
+    }
+
+    // Actualizar el contacto
+    const stmt = db.prepare('UPDATE contacts SET nombre = ?, telefono = ?, email = ?, notas = ?, categoria = ? WHERE id = ? AND user_id = ?');
+    stmt.run(nombre, telefono, email, notas, categoria, id, userId, function (err) {
         if (err) {
-            res.status(500).json({ error: err.message });
+            //res.status(500).json({ error: err.message });
         } else {
             res.status(200).json({ message: 'Contacto actualizado' });
         }
     });
+});
 });
 
 app.get('/contacts/:id', authenticateToken, (req, res) => {
@@ -289,7 +310,7 @@ app.post('/register', async (req, res) => {
         const stmt = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
         stmt.run(username, hashedPassword, function (err) {
             if (err) {
-                return res.status(500).json({ error: 'Error al registrar usuario' });
+                return res.status(500).json({ error: 'Error al registrar usuario, ya existe' });
             }
             res.status(201).json({ message: 'Usuario registrado' });
         });

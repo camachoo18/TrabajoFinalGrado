@@ -1,6 +1,4 @@
 const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
 
 // Crear o abrir la base de datos SQLite
 const db = new sqlite3.Database('contacts.db', (err) => {
@@ -11,48 +9,44 @@ const db = new sqlite3.Database('contacts.db', (err) => {
     }
 });
 
-// Crear la tabla de contactos si no existe
-db.run(`
-    CREATE TABLE IF NOT EXISTS contacts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        telefono TEXT NOT NULL UNIQUE,
-        email TEXT NOT NULL,
-        notas TEXT,
-        categoria TEXT NOT NULL CHECK (categoria IN ('Trabajo', 'Amigos', 'Familia', 'Sin Categoría', 'Otra'))
-    );
-`, (err) => {
+// Verificar si la columna `user_id` existe en la tabla `contacts`
+db.all("PRAGMA table_info(contacts);", (err, rows) => {
     if (err) {
-        console.error('Error al crear la tabla de contactos:', err.message);
+        console.error('Error al verificar la tabla de contactos:', err.message);
+        return;
+    }
+
+    const columnExists = rows.some(row => row.name === 'user_id');
+    if (!columnExists) {
+        console.log('La columna `user_id` no existe. Añadiéndola a la tabla `contacts`...');
+
+        // Añadir la columna `user_id` a la tabla `contacts`
+        db.run(`
+            ALTER TABLE contacts ADD COLUMN user_id INTEGER NOT NULL DEFAULT 1;
+        `, (err) => {
+            if (err) {
+                console.error('Error al añadir la columna `user_id`:', err.message);
+            } else {
+                console.log('Columna `user_id` añadida correctamente.');
+            }
+        });
     } else {
-        console.log('Tabla de contactos creada (o ya existe).');
+        console.log('La columna `user_id` ya existe en la tabla `contacts`.');
     }
 });
 
-// Crear la tabla de contactos si no existe
+// Crear la tabla de usuarios si no existe
 db.run(`
-    CREATE TABLE IF NOT EXISTS contacts (
+    CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        telefono TEXT NOT NULL UNIQUE,
-        email TEXT NOT NULL,
-        notas TEXT,
-        categoria TEXT NOT NULL CHECK (categoria IN ('Trabajo', 'Amigos', 'Familia', 'Sin Categoría', 'Otra'))
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL
     );
 `, (err) => {
     if (err) {
-        console.error('Error al crear la tabla de contactos:', err.message);
+        console.error('Error al crear la tabla de usuarios:', err.message);
     } else {
-        console.log('Tabla de contactos creada (o ya existe).');
-    }
-});
-
-// Eliminar la tabla de categorías si existe (ya no la necesitamos)
-db.run(`DROP TABLE IF EXISTS categories;`, (err) => {
-    if (err) {
-        console.error('Error al eliminar la tabla de categorías:', err.message);
-    } else {
-        console.log('Tabla de categorías eliminada.');
+        console.log('Tabla de usuarios creada (o ya existe).');
     }
 });
 

@@ -249,6 +249,7 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
 
 // Editar un contacto (mostrar datos en el formulario)
 async function editContact(id) {
+    console.log('Cargando contacto con ID:', id); // Depuración
     try {
         const token = localStorage.getItem('token');
         const response = await fetch(`/contacts/${id}`, {
@@ -277,6 +278,7 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('editForm').dataset.id;
+    console.log('ID del contacto enviado:', id); // Depuración
     const nombre = document.getElementById('editNombre').value.trim();
     const telefono = document.getElementById('editTelefono').value.trim();
     const email = document.getElementById('editEmail').value.trim();
@@ -284,13 +286,6 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     const notas = document.getElementById('editNotas').value.trim();
 
     const contact = { nombre, telefono, email, categoria, notas };
-
-    // Validar los datos antes de enviar
-    const validationError = validateContact(contact);
-    if (validationError) {
-        showFeedback(validationError, false);
-        return; // Detener si hay un error de validación
-    }
 
     try {
         const token = localStorage.getItem('token');
