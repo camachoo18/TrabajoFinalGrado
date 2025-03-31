@@ -51,27 +51,32 @@ document.getElementById('logoutButton')?.addEventListener('click', () => {
     window.location.href = '/html/logout.html';
 });
 
-// Verificar si el usuario está autenticado al cargar la página principal
+// Verificar si el usuario está autenticado al cargar la página
 document.addEventListener('DOMContentLoaded', async () => {
     const currentPath = window.location.pathname;
     const protectedPaths = ['/html/index.html', '/html/view-contacts.html', '/html/add-contact.html'];
-    if (protectedPaths.includes(currentPath)) {
-        try {
-            const token = localStorage.getItem('token');
-            if (token) {
-                const response = await fetch('/isAuthenticated', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!response.ok) {
-                    // El usuario no está autenticado, redirigir a la página de inicio
-                    window.location.href = '/';
-                }
-            } else {
-                // No hay token, redirigir a la página de inicio
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/checkAuth', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.authenticated) {
+            // Si el usuario está autenticado y está en la página de inicio o login, redirigir a index.html
+            if (currentPath === '/' || currentPath === '/html/login.html' || currentPath === '/html/register.html') {
+                window.location.href = '/html/index.html';
+            }
+        } else {
+            // Si el usuario no está autenticado y está en una página protegida, redirigir a la página de inicio
+            if (protectedPaths.includes(currentPath)) {
                 window.location.href = '/';
             }
-        } catch (err) {
-            console.error('Error al verificar autenticación:', err);
+        }
+    } catch (err) {
+        console.error('Error al verificar autenticación:', err);
+        if (protectedPaths.includes(currentPath)) {
             window.location.href = '/';
         }
     }

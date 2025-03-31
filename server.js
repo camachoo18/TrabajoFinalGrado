@@ -105,6 +105,22 @@ app.get('/categories', authenticateToken, (req, res) => {
         }
     });
 });
+// Ruta para verificar si el usuario está autenticado
+app.get('/checkAuth', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(200).json({ authenticated: false }); // No autenticado
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) {
+            return res.status(200).json({ authenticated: false }); // Token inválido
+        }
+        res.status(200).json({ authenticated: true }); // Autenticado
+    });
+});
 
 app.post('/categories/add', authenticateToken, (req, res) => {
     const { categoria } = req.body;

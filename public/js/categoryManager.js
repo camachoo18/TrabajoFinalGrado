@@ -16,7 +16,7 @@ async function loadCategories() {
 
         if (response.ok) {
             const categories = await response.json();
-            console.log('Categorías recibidas:', categories); // Depuración
+            //console.log('Categorías recibidas:', categories); // Depuración
             const categorySelect = document.getElementById('categoria');
             const filterSelect = document.getElementById('filtroCategoria');
 
@@ -77,7 +77,7 @@ function handleCategoryChange() {
         });
     }
 }
-console.log('Token de autenticación:', localStorage.getItem('token'));
+
 
 // Llamar a las funciones al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
