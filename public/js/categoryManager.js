@@ -7,18 +7,20 @@ function showFeedback(message, success = true) {
     setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
 
-// Cargar categorías desde el servidor
 async function loadCategories() {
     try {
         const token = localStorage.getItem('token');
         const response = await fetch('/categories', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (response.ok) {
             const categories = await response.json();
+            console.log('Categorías recibidas:', categories); // Depuración
             const categorySelect = document.getElementById('categoria');
             const filterSelect = document.getElementById('filtroCategoria');
 
+            // Limpiar las opciones existentes
             if (categorySelect) {
                 categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
             }
@@ -26,10 +28,12 @@ async function loadCategories() {
                 filterSelect.innerHTML = '<option value="">Todas las categorías</option>';
             }
 
+            // Agregar categorías dinámicas desde el servidor
             categories.forEach(category => {
                 const option = document.createElement('option');
                 option.value = category;
                 option.textContent = category;
+
                 if (categorySelect) {
                     categorySelect.appendChild(option);
                 }
@@ -52,26 +56,31 @@ async function loadCategories() {
             showFeedback('Error al cargar categorías', false);
         }
     } catch (err) {
+        console.error('Error al cargar categorías:', err); // Depuración
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 
-// Mostrar u ocultar el campo de nueva categoría
-document.addEventListener('DOMContentLoaded', () => {
+// Mostrar/ocultar el campo de nueva categoría
+function handleCategoryChange() {
     const categoriaSelect = document.getElementById('categoria');
     const nuevaCategoriaInput = document.getElementById('nuevaCategoria');
 
     if (categoriaSelect) {
-        // Cargar las categorías iniciales
-        loadCategories();
-
-        // Mostrar/ocultar el campo de nueva categoría cuando el usuario selecciona "Otra"
         categoriaSelect.addEventListener('change', function () {
             if (this.value === 'Otra') {
                 nuevaCategoriaInput.style.display = 'block'; // Mostrar campo para nueva categoría
             } else {
                 nuevaCategoriaInput.style.display = 'none'; // Ocultar campo para nueva categoría
+                nuevaCategoriaInput.value = ''; // Limpiar el campo
             }
         });
     }
+}
+console.log('Token de autenticación:', localStorage.getItem('token'));
+
+// Llamar a las funciones al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    loadCategories(); // Cargar categorías desde el servidor
+    handleCategoryChange(); // Configurar el manejo del cambio de categoría
 });

@@ -94,14 +94,14 @@ app.get('/contacts/search', authenticateToken, (req, res) => {
 });
 
 app.get('/categories', authenticateToken, (req, res) => {
-    const query = 'SELECT DISTINCT categoria FROM contacts';
+    const query = 'SELECT nombre FROM categories';
     db.all(query, [], (err, rows) => {
         if (err) {
-            console.error(err.message);
+            console.error('Error al obtener las categorías:', err.message);
             res.status(500).send('Error al obtener las categorías.');
         } else {
-            const categories = rows.map(row => row.categoria);
-            res.json(categories); // Devuelve la lista de categorías únicas al frontend
+            const categories = rows.map(row => row.nombre);
+            res.json(categories); // Devuelve la lista de categorías al frontend
         }
     });
 });
@@ -202,11 +202,12 @@ function validateContact(req, res, next) {
 
 app.get('/contacts/filter', authenticateToken, (req, res) => {
     const categoria = req.query.categoria;
-    let query = 'SELECT * FROM contacts';
-    const params = [];
+    const userId = req.user.id; // Obtener el ID del usuario autenticado
+    let query = 'SELECT * FROM contacts WHERE user_id = ?';
+    const params = [userId];
 
     if (categoria && categoria !== 'Todas') {
-        query += ' WHERE categoria = ?';
+        query += ' AND categoria = ?';
         params.push(categoria);
     }
 
