@@ -31,7 +31,7 @@ function authenticateToken(req, res, next) {
         if (err) {
             return res.status(403).json({ error: 'Token inválido' });
         }
-        console.log('Usuario autenticado:', user); // Depuración
+        //console.log('Usuario autenticado:', user); // Depuración
         req.user = user;
         next();
     });

@@ -7,11 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Función para mostrar feedback
 function showFeedback(message, success = true) {
+    // Crear el contenedor de feedback dinámicamente
     const feedback = document.createElement('div');
     feedback.textContent = message;
     feedback.className = success ? 'feedback success' : 'feedback error';
     document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
+
+    // Eliminar el feedback después de 3 segundos
+    setTimeout(() => feedback.remove(), 3000);
 }
 
 // Función para alternar el modo de edición
@@ -249,7 +252,7 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
 
 // Editar un contacto (mostrar datos en el formulario)
 async function editContact(id) {
-    console.log('Cargando contacto con ID:', id); // Depuración
+    //console.log('Cargando contacto con ID:', id); // Depuración
     try {
         const token = localStorage.getItem('token');
         const response = await fetch(`/contacts/${id}`, {
@@ -262,9 +265,12 @@ async function editContact(id) {
             document.getElementById('editTelefono').value = contact.telefono;
             document.getElementById('editEmail').value = contact.email;
             document.getElementById('editNotas').value = contact.notas;
+            document.getElementById('editCategoria').value = contact.categoria;
 
             //document.getElementById('contactForm').style.display = 'none';
             document.getElementById('editForm').style.display = 'block';
+            // Desplazar la página para que el formulario sea visible
+            document.getElementById('editForm').scrollIntoView({ behavior: 'smooth' });
         } else {
             showFeedback('Error al cargar datos del contacto', false);
         }

@@ -10,7 +10,7 @@
     <div class="container">
         <h1>Agregar Nuevo Contacto</h1>
         
-        <div id="feedback" class="feedback"></div>
+        
 
         <!-- Formulario para agregar contacto -->
         <form id="contactForm">
@@ -27,13 +27,13 @@
                 <option value="Otra">Otra</option>
             </select>
             <input type="text" id="nuevaCategoria" placeholder="Nueva Categoría" style="display: none;">
-            <button type="submit">Agregar Contacto</button>
+            <button type="submit" class="primary-button">Agregar Contacto</button>
         </form>
         
         <!-- Navegación hacia la vista de contactos -->
         <div class="navigation">
-            <button id="logoutButton">Cerrar Sesión</button>
-            <a href="view-contacts.html">Ver Contactos</a>
+            <a href="view-contacts.html" class="secondary-button">Ver Contactos</a>
+            <button id="logoutButton" class="secondary-button">Cerrar Sesión</button>
         </div>
     </div>
     <script>
@@ -68,7 +68,5 @@
     <script src="/js/categoryManager.js"></script> <!-- Para cargar categorías -->
     <script src="/js/contactManager.js"></script> <!-- Para CRUD -->
     <script src="/js/filterManager.js"></script>
-    
-    
 </body>
 </html>

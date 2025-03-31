@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="contacts-container">
         <h1>Lista de Contactos</h1>
         
         <!-- Filtro de contactos -->
@@ -26,7 +26,7 @@
             </select>
         </div>
         <!-- Botón para descargar contactos en formato CSV -->
-        <button id="downloadCsvButton">Descargar CSV</button>
+        <button id="downloadCsvButton" class="primary-button">Descargar CSV</button>
         <!-- Tabla para mostrar los contactos -->
         <table id="contactList">
             <thead>
@@ -56,13 +56,13 @@
                 <option value="Sin Categoría">Sin Categoría</option>
                 <option value="Otra">Otra</option>
             </select>
-            <button type="submit" id="saveEditButton" >Actualizar Contacto</button>
+            <button type="submit" id="saveEditButton" class="primary-button">Actualizar Contacto</button>
         </form>
 
         <!-- Navegación hacia la página de agregar contacto -->
         <div class="navigation">
-            <button id="logoutButton">Cerrar Sesión</button>
-            <a href="add-contact.html">Agregar Nuevo Contacto</a>
+            <button id="logoutButton" class="secondary-button">Cerrar Sesión</button>
+            <a href="add-contact.html" class="secondary-button">Agregar Nuevo Contacto</a>
         </div>
     </div>
     <script>
