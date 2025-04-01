@@ -7,6 +7,7 @@ const port = 3000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nunjucks = require('nunjucks');
+const { getAuthUrl, getAccessToken, getGoogleContacts } = require('./public/js/googleAuth'); // Importa las funciones de autenticación de Google
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -122,6 +123,51 @@ app.get('/checkAuth', (req, res) => {
     });
 });
 
+
+// Ruta para redirigir al usuario a Google para autenticarse
+app.get('/auth/google', (req, res) => {
+    const authUrl = getAuthUrl();
+    res.redirect(authUrl);
+});
+
+// Ruta de callback para manejar el código de autorización
+app.get('/oauth2callback', async (req, res) => {
+    const code = req.query.code;
+    try {
+        const tokens = await getAccessToken(code);
+        console.log('Tokens obtenidos:', tokens); // Depuración
+        res.redirect('/html/view-contacts.html'); // Redirigir a la vista de contactos
+    } catch (err) {
+        console.error('Error al obtener el token de acceso:', err);
+        res.status(500).send('Error al autenticar con Google');
+    }
+});
+
+// Ruta para importar contactos desde Google
+app.get('/import-google-contacts', authenticateToken, async (req, res) => {
+    try {
+        const contacts = await getGoogleContacts();
+        const userId = req.user.id;
+
+        // Guardar los contactos en la base de datos
+        const stmt = db.prepare('INSERT INTO contacts (nombre, email, telefono, user_id) VALUES (?, ?, ?, ?)');
+        contacts.forEach(contact => {
+            try {
+                const nombre = contact.names?.[0]?.displayName || 'Sin Nombre';
+                const email = contact.emailAddresses?.[0]?.value || '';
+                const telefono = contact.phoneNumbers?.[0]?.value || '';
+                stmt.run(nombre, email, telefono, userId);
+            } catch (err) {
+                console.error('Error al guardar contacto en la base de datos:', err);
+            }
+        });
+
+        res.status(200).json({ message: 'Contactos importados correctamente' });
+    } catch (err) {
+        console.error('Error al importar contactos:', err);
+        res.status(500).json({ error: 'Error al importar contactos' });
+    }
+});
 app.post('/categories/add', authenticateToken, (req, res) => {
     const { categoria } = req.body;
 

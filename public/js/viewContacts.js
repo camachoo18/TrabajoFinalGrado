@@ -49,4 +49,5 @@ function renderContacts(contacts) {
         row.appendChild(actionsCell);
         tableBody.appendChild(row);
     });
+    
 }

@@ -42,6 +42,8 @@ function renderContacts(contacts) {
         editButton.textContent = 'Editar';
         editButton.className = 'edit';
         editButton.onclick = () => {
+            toggleEditMode(row, contact.id);
+            
             const token = localStorage.getItem('token');
             fetch(`/contacts/${contact.id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -53,19 +55,24 @@ function renderContacts(contacts) {
                         return;
                     }
 
-                    // Cargar los datos del contacto en el formulario de edición
-                    document.querySelector('#editNombre').value = contact.nombre;
-                    document.querySelector('#editTelefono').value = contact.telefono;
-                    document.querySelector('#editEmail').value = contact.email;
-                    document.querySelector('#editNotas').value = contact.notas;
-                    document.querySelector('#editCategoria').value = contact.categoria;
+            // Cargar los datos del contacto en el formulario de edición
+                document.querySelector('#editNombre').value = contact.nombre;
+                document.querySelector('#editTelefono').value = contact.telefono;
+                document.querySelector('#editEmail').value = contact.email;
+                document.querySelector('#editNotas').value = contact.notas;
+                document.querySelector('#editCategoria').value = contact.categoria;
 
-                    // Mostrar el formulario de edición
-                    document.querySelector('#editForm').style.display = 'block';
+            // Mostrar el formulario de edición
+            const editForm = document.querySelector('#editForm');
+            editForm.style.display = 'block';
 
-                    // Guardar los cambios
-                    document.querySelector('#saveEditButton').onclick = () => {
-                        saveEdits(contact.id);
+            // Desplazar la página para que el formulario sea visible
+            console.log('Desplazando hacia el formulario de edición...');
+            editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Guardar los cambios
+            document.querySelector('#saveEditButton').onclick = () => {
+                saveEdits(contactId);
                     };
                 })
                 .catch(error => {

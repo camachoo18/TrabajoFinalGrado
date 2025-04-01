@@ -44,25 +44,27 @@
             </tbody>
         </table>
         <!-- Formulario de edición -->
-        <form id="editForm" style="display: none;">
-            <input type="text" id="editNombre" placeholder="Nombre" required>
-            <input type="text" id="editTelefono" placeholder="Teléfono" required pattern="[0-9]{9}" maxlength="9">
-            <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
-            <textarea id="editNotas" placeholder="Notas"></textarea>
-            <select id="editCategoria" required>
-                <option value="Trabajo">Trabajo</option>
-                <option value="Amigos">Amigos</option>
-                <option value="Familia">Familia</option>
-                <option value="Sin Categoría">Sin Categoría</option>
-                <option value="Otra">Otra</option>
-            </select>
-            <button type="submit" id="saveEditButton" class="primary-button">Actualizar Contacto</button>
-        </form>
+<!-- Formulario de edición -->
+<form id="editForm" style="display: none;">
+    <input type="text" id="editNombre" placeholder="Nombre" required>
+    <input type="text" id="editTelefono" placeholder="Teléfono" required pattern="[0-9]{9}" maxlength="9">
+    <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
+    <textarea id="editNotas" placeholder="Notas"></textarea>
+    <select id="editCategoria" required>
+        <option value="Trabajo">Trabajo</option>
+        <option value="Amigos">Amigos</option>
+        <option value="Familia">Familia</option>
+        <option value="Sin Categoría">Sin Categoría</option>
+        <option value="Otra">Otra</option>
+    </select>
+    <button type="submit" id="saveEditButton" class="primary-button">Actualizar Contacto</button>
+</form>
 
         <!-- Navegación hacia la página de agregar contacto -->
         <div class="navigation">
             <button id="logoutButton" class="secondary-button">Cerrar Sesión</button>
             <a href="add-contact.html" class="secondary-button">Agregar Nuevo Contacto</a>
+            <button id="importGoogleContacts" class="secondary-button">Importar Contactos de Google</button>
         </div>
     </div>
     <script>
