@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de URLs</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Monitor de URLs</h1>
+        <form id="monitorForm">
+            <label for="url">URL:</label>
+            <input type="url" id="url" placeholder="https://example.com" required>
+            
+            <label for="interval">Intervalo (en segundos):</label>
+            <input type="number" id="interval" placeholder="6" min="1" required>
+            
+            <button type="submit" class="primary-button">Iniciar Monitoreo</button>
+        </form>
+
+        <button id="stopMonitoringButton" class="secondary-button">Detener Monitoreo</button>
+
+        <div id="monitorLog" class="log-container">
+            <h2>Log de Monitoreo</h2>
+            <ul id="logList"></ul>
+        </div>
+    </div>
+    <script src="/js/monitorUI.js"></script>
+</body>
+</html>

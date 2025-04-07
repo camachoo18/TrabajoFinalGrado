@@ -71,6 +71,10 @@ app.get('/isAuthenticated', authenticateToken, (req, res) => {
     res.status(200).json({ authenticated: true });
 });
 
+app.get('/html/monitor.html', authenticateToken, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'monitor.html'));
+});
+
 // Rutas protegidas para la API
 app.get('/contacts/search', authenticateToken, (req, res) => {
     const query = req.query.q || ''; // Obtén la query de búsqueda (si no hay, usa una cadena vacía)
@@ -403,6 +407,91 @@ app.post('/login', (req, res) => {
     });
 });
 
+const { pingWebsite } = require('./public/js/monitor');
+const monitoringIntervals = {}; // Objeto para almacenar los intervalos por URL
+const monitoringClients = []; // Lista de clientes conectados para SSE
+
+// Endpoint para iniciar el monitoreo de URLs
+app.post('/start-monitoring', (req, res) => {
+    const { urls, interval } = req.body;
+    if (!urls || !Array.isArray(urls) || !interval) {
+        return res.status(400).json({ error: 'Debes proporcionar un array de URLs y un intervalo' });
+    }
+
+    urls.forEach(url => {
+        if (monitoringIntervals[url]) {
+            clearInterval(monitoringIntervals[url]); // Detener cualquier monitoreo previo para esta URL
+            console.log(`Intervalo existente para ${url} detenido.`);
+        }
+
+        // Iniciar un nuevo intervalo para la URL
+        monitoringIntervals[url] = setInterval(async () => {
+            const message = `Haciendo ping a ${url}...`;
+            console.log(message);
+            sendToClients(message); // Enviar mensaje a los clientes conectados
+
+            try {
+                const response = await pingWebsite(url);
+                const statusMessage = `Respuesta de ${url}: ${response}`;
+                console.log(statusMessage);
+                sendToClients(statusMessage); // Enviar mensaje a los clientes conectados
+            } catch (err) {
+                const errorMessage = `Error al hacer ping a ${url}: ${err.message}`;
+                console.error(errorMessage);
+                sendToClients(errorMessage); // Enviar mensaje a los clientes conectados
+            }
+        }, interval);
+
+        console.log(`Monitoreo iniciado para ${url} cada ${interval / 1000} segundos.`);
+    });
+
+    res.status(200).json({ message: 'Monitoreo iniciado para las URLs proporcionadas' });
+});
+
+// Endpoint para detener el monitoreo de URLs
+app.post('/stop-monitoring', (req, res) => {
+    const { urls } = req.body;
+    if (!urls || !Array.isArray(urls)) {
+        return res.status(400).json({ error: 'Debes proporcionar un array de URLs' });
+    }
+
+    urls.forEach(url => {
+        if (monitoringIntervals[url]) {
+            clearInterval(monitoringIntervals[url]); // Detener el intervalo
+            delete monitoringIntervals[url]; // Eliminarlo del objeto
+            const message = `Monitoreo detenido para ${url}.`;
+            console.log(message);
+            //sendToClients(message); // Enviar mensaje a los clientes conectados
+        }
+    });
+
+    res.status(200).json({ message: 'Monitoreo detenido para las URLs proporcionadas' });
+});
+
+// Endpoint para enviar mensajes de monitoreo en tiempo real (SSE)
+app.get('/monitor-stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Agregar el cliente a la lista de clientes conectados
+    monitoringClients.push(res);
+
+    // Eliminar el cliente cuando se desconecte
+    req.on('close', () => {
+        const index = monitoringClients.indexOf(res);
+        if (index !== -1) {
+            monitoringClients.splice(index, 1);
+        }
+    });
+});
+
+// Función para enviar mensajes a todos los clientes conectados
+function sendToClients(message) {
+    monitoringClients.forEach(client => {
+        client.write(`data: ${message}\n\n`);
+    });
+}
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
 });
