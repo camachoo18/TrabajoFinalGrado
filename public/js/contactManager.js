@@ -155,7 +155,7 @@ async function loadContacts() {
         });
         if (response.ok) {
             const contacts = await response.json();
-            renderContacts(contacts);
+            renderContacts(contacts); // Renderizar los contactos en la tabla
         } else {
             showFeedback('Error al cargar contactos', false);
         }
@@ -166,7 +166,7 @@ async function loadContacts() {
 
 // Función para renderizar contactos
 function renderContacts(contacts) {
-    const tableBody = document.querySelector('#contactList tbody');
+    const tableBody = document.querySelector('#contactsTableBody');
     if (!tableBody) {
         console.error('Elemento de la tabla no encontrado');
         return;
@@ -191,7 +191,7 @@ function renderContacts(contacts) {
         row.appendChild(emailCell);
 
         const categoriaCell = document.createElement('td');
-        categoriaCell.textContent = contact.categoria;
+        categoriaCell.textContent = contact.categoria || 'Sin Categoría';
         row.appendChild(categoriaCell);
 
         const notasCell = document.createElement('td');
@@ -293,8 +293,11 @@ function toggleEditMode(row, contactId) {
             document.querySelector('#editNotas').value = contact.notas;
             document.querySelector('#editCategoria').value = contact.categoria;
 
-            // Mostrar el formulario de edición
+            // Establecer el ID del contacto en el formulario de edición
             const editForm = document.querySelector('#editForm');
+            editForm.dataset.id = contactId; // Guardar el ID en el atributo dataset
+
+            // Mostrar el formulario de edición
             editForm.style.display = 'block';
 
             // Desplazar la página para que el formulario sea visible
@@ -314,21 +317,25 @@ function toggleEditMode(row, contactId) {
 document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const id = document.getElementById('editForm').dataset.id;
-    console.log('ID del contacto enviado:', id); // Depuración
+    const id = document.getElementById('editForm').dataset.id; // Obtener el ID del contacto
+    if (!id) {
+        showFeedback('Error: No se pudo identificar el contacto a editar.', false);
+        return;
+    }
+
     const nombre = document.getElementById('editNombre').value.trim();
     const telefono = document.getElementById('editTelefono').value.trim();
     const email = document.getElementById('editEmail').value.trim();
-    const categoria = document.getElementById('editCategoria').value;
     const notas = document.getElementById('editNotas').value.trim();
+    const categoria = document.getElementById('editCategoria').value;
 
-    const contact = { nombre, telefono, email, categoria, notas };
+    const contact = { nombre, telefono, email, notas, categoria };
 
     try {
         const token = localStorage.getItem('token');
         const response = await fetch(`/contacts/edit/${id}`, {
             method: 'PUT',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
@@ -336,9 +343,9 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
         });
 
         if (response.ok) {
-            loadContacts(); // Recargar lista de contactos
             showFeedback('Contacto actualizado correctamente');
-            document.getElementById('editForm').style.display = 'none'; // Ocultar formulario
+            loadContacts(); // Recargar la lista de contactos
+            document.getElementById('editForm').style.display = 'none'; // Ocultar el formulario de edición
         } else {
             const error = await response.json();
             showFeedback(error.error || 'Error al actualizar contacto', false);

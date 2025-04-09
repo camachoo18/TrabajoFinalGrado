@@ -333,24 +333,23 @@ app.put('/contacts/edit/:id', authenticateToken, validateContact, (req, res) => 
 
     // Verificar que el contacto pertenece al usuario
     const checkQuery = 'SELECT * FROM contacts WHERE id = ? AND user_id = ?';
-db.get(checkQuery, [id, userId], (err, row) => {
-    if (err) {
-        return res.status(500).json({ error: 'Error al verificar el contacto' });
-    }
-    if (!row) {
-        //return res.status(404).json({ error: 'Contacto no encontrado o no autorizado' });
-    }
-
-    // Actualizar el contacto
-    const stmt = db.prepare('UPDATE contacts SET nombre = ?, telefono = ?, email = ?, notas = ?, categoria = ? WHERE id = ? AND user_id = ?');
-    stmt.run(nombre, telefono, email, notas, categoria, id, userId, function (err) {
+    db.get(checkQuery, [id, userId], (err, row) => {
         if (err) {
-            //res.status(500).json({ error: err.message });
-        } else {
-            res.status(200).json({ message: 'Contacto actualizado' });
+            return res.status(500).json({ error: 'Error al verificar el contacto' });
         }
+        if (!row) {
+            return res.status(404).json({ error: 'Contacto no encontrado o no autorizado' });
+        }
+
+        // Actualizar el contacto
+        const stmt = db.prepare('UPDATE contacts SET nombre = ?, telefono = ?, email = ?, notas = ?, categoria = ? WHERE id = ? AND user_id = ?');
+        stmt.run(nombre, telefono, email, notas, categoria, id, userId, function (err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.status(200).json({ message: 'Contacto actualizado' });
+        });
     });
-});
 });
 
 app.get('/contacts/:id', authenticateToken, (req, res) => {
