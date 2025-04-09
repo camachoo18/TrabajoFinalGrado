@@ -29,7 +29,7 @@ function renderContacts(contacts) {
         row.appendChild(emailCell);
 
         const categoriaCell = document.createElement('td');
-        categoriaCell.textContent = contact.categoria;
+        categoriaCell.textContent = contact.categoria || 'Sin Categoría';
         row.appendChild(categoriaCell);
 
         const notasCell = document.createElement('td');
@@ -43,41 +43,6 @@ function renderContacts(contacts) {
         editButton.className = 'edit';
         editButton.onclick = () => {
             toggleEditMode(row, contact.id);
-            
-            const token = localStorage.getItem('token');
-            fetch(`/contacts/${contact.id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-                .then(response => response.json())
-                .then(contact => {
-                    if (!contact) {
-                        console.error('Contacto no encontrado');
-                        return;
-                    }
-
-            // Cargar los datos del contacto en el formulario de edición
-                document.querySelector('#editNombre').value = contact.nombre;
-                document.querySelector('#editTelefono').value = contact.telefono;
-                document.querySelector('#editEmail').value = contact.email;
-                document.querySelector('#editNotas').value = contact.notas;
-                document.querySelector('#editCategoria').value = contact.categoria;
-
-            // Mostrar el formulario de edición
-            const editForm = document.querySelector('#editForm');
-            editForm.style.display = 'block';
-
-            // Desplazar la página para que el formulario sea visible
-            console.log('Desplazando hacia el formulario de edición...');
-            editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Guardar los cambios
-            document.querySelector('#saveEditButton').onclick = () => {
-                saveEdits(contactId);
-                    };
-                })
-                .catch(error => {
-                    console.error('Error al obtener el contacto:', error);
-                });
         };
         actionsCell.appendChild(editButton);
 
@@ -90,4 +55,86 @@ function renderContacts(contacts) {
         row.appendChild(actionsCell);
         tableBody.appendChild(row);
     });
+}
+
+// Función para alternar el modo de edición
+function toggleEditMode(row, contactId) {
+    const token = localStorage.getItem('token');
+    fetch(`/contacts/${contactId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    })
+        .then(response => response.json())
+        .then(contact => {
+            if (!contact) {
+                console.error('Contacto no encontrado');
+                return;
+            }
+
+            // Cargar los datos del contacto en el formulario de edición
+            document.querySelector('#editNombre').value = contact.nombre;
+            document.querySelector('#editTelefono').value = contact.telefono;
+            document.querySelector('#editEmail').value = contact.email;
+            document.querySelector('#editNotas').value = contact.notas;
+            document.querySelector('#editCategoria').value = contact.categoria;
+
+            // Mostrar el formulario de edición
+            const editForm = document.querySelector('#editForm');
+            editForm.dataset.id = contactId; // Guardar el ID en el atributo dataset
+            editForm.style.display = 'block';
+
+            // Desplazar la página para que el formulario sea visible
+            console.log('Desplazando hacia el formulario de edición...');
+            editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Guardar los cambios
+            document.querySelector('#saveEditButton').onclick = () => {
+                saveEdits(contactId);
+            };
+        })
+        .catch(error => {
+            console.error('Error al obtener el contacto:', error);
+        });
+}
+
+// Función para guardar los cambios en el contacto después de editar
+async function saveEdits(contactId) {
+    const updatedContact = {
+        nombre: document.querySelector('#editNombre').value,
+        telefono: document.querySelector('#editTelefono').value,
+        email: document.querySelector('#editEmail').value,
+        notas: document.querySelector('#editNotas').value,
+        categoria: document.querySelector('#editCategoria').value,
+    };
+
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`/contacts/edit/${contactId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedContact),
+        });
+
+        if (response.ok) {
+            showFeedback('Contacto actualizado correctamente');
+            loadContacts(); // Recargar la lista de contactos
+            document.querySelector('#editForm').style.display = 'none'; // Ocultar el formulario de edición
+        } else {
+            const error = await response.json();
+            showFeedback(error.error || 'Error al actualizar contacto', false);
+        }
+    } catch (err) {
+        showFeedback(`Error de conexión: ${err.message}`, false);
+    }
+}
+
+// Función para mostrar feedback
+function showFeedback(message, success = true) {
+    const feedback = document.createElement('div');
+    feedback.textContent = message;
+    feedback.className = success ? 'feedback success' : 'feedback error';
+    document.body.appendChild(feedback);
+    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
