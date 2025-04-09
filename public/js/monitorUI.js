@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addLogMessage = (message) => {
         const logItem = document.createElement('li');
         logItem.textContent = message;
+        logItem.classList.add('log-item', 'log-info'); // Clase para estilo
         logList.appendChild(logItem);
         logList.scrollTop = logList.scrollHeight; // Desplazar hacia el final del log
     };
@@ -31,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const url = document.getElementById('url').value;
         const interval = parseInt(document.getElementById('interval').value, 10) * 1000; // Convertir a milisegundos
+
+        // Limpiar los logs anteriores
+        logList.innerHTML = '';
 
         try {
             const response = await fetch('/start-monitoring', {

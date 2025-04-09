@@ -7,6 +7,7 @@ const port = 3000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nunjucks = require('nunjucks');
+const axios = require('axios'); 
 const { getAuthUrl, getAccessToken, getGoogleContacts } = require('./public/js/googleAuth'); // Importa las funciones de autenticación de Google
 
 const SECRET_KEY = process.env.SECRET_KEY;
@@ -484,6 +485,29 @@ app.get('/monitor-stream', (req, res) => {
             monitoringClients.splice(index, 1);
         }
     });
+});
+
+// Endpoint para realizar un GET a una URL y devolver el estado
+app.get('/ping-url', async (req, res) => {
+    const { url } = req.query;
+
+    if (!url) {
+        return res.status(400).json({ error: 'Debes proporcionar una URL' });
+    }
+
+    try {
+        const response = await axios.get(url, { timeout: 5000 }); // Timeout de 5 segundos
+        res.status(200).json({
+            status: response.status,
+            statusText: response.statusText,
+            data: response.data ? 'Contenido recibido' : 'Sin contenido',
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: error.message,
+            status: error.response ? error.response.status : 'Sin respuesta',
+        });
+    }
 });
 
 // Función para enviar mensajes a todos los clientes conectados
