@@ -78,23 +78,25 @@ app.get('/html/monitor.html', authenticateToken, (req, res) => {
 
 // Rutas protegidas para la API
 app.get('/contacts/search', authenticateToken, (req, res) => {
-    const query = req.query.q || ''; // Obtén la query de búsqueda (si no hay, usa una cadena vacía)
+    const query = req.query.q || ''; // Obtén la query de búsqueda
+    const userId = req.user.id; // ID del usuario autenticado
+
     const sql = `
         SELECT * FROM contacts
-        WHERE 
+        WHERE user_id = ? AND (
             nombre LIKE ? OR
             telefono LIKE ? OR
             email LIKE ? OR
             notas LIKE ?
+        )
     `;
     const searchTerm = `%${query}%`; // Usa comodines para búsqueda parcial
-
-    db.all(sql, [searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
+    db.all(sql, [userId, searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
         if (err) {
             console.error('Error al buscar contactos:', err.message);
             res.status(500).json({ error: 'Error al buscar contactos' });
         } else {
-            res.json(rows);
+            res.json(rows); // Devuelve los contactos filtrados
         }
     });
 });
@@ -269,7 +271,8 @@ function validateContact(req, res, next) {
 
 app.get('/contacts/filter', authenticateToken, (req, res) => {
     const categoria = req.query.categoria;
-    const userId = req.user.id; // Obtener el ID del usuario autenticado
+    const userId = req.user.id; // ID del usuario autenticado
+
     let query = 'SELECT * FROM contacts WHERE user_id = ?';
     const params = [userId];
 
@@ -280,10 +283,11 @@ app.get('/contacts/filter', authenticateToken, (req, res) => {
 
     db.all(query, params, (err, rows) => {
         if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Error al consultar la base de datos' });
+            console.error('Error al filtrar contactos:', err.message);
+            res.status(500).json({ error: 'Error al filtrar contactos' });
+        } else {
+            res.json(rows); // Devuelve los contactos filtrados
         }
-        res.json(rows); // Devolver los contactos filtrados
     });
 });
 

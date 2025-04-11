@@ -271,25 +271,6 @@ input::placeholder, textarea::placeholder {
     }
 }
 
-/* Modo oscuro */
-body.dark-mode {
-    background-color: #121212;
-    color: #f4f4f4;
-}
-
-.container.dark-mode, .contacts-container.dark-mode {
-    background-color: #333;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-}
-
-.nav-button.dark-mode, .secondary-button.dark-mode {
-    background-color: #555;
-    color: white;
-}
-
-.nav-button.dark-mode:hover, .secondary-button.dark-mode:hover {
-    background-color: #777;
-}
 
 /* Responsivo */
 @media (max-width: 768px) {

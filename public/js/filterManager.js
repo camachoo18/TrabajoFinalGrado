@@ -91,6 +91,7 @@ document.getElementById('filtroCategoria')?.addEventListener('change', async (e)
         });
         if (response.ok) {
             const contacts = await response.json();
+            renderContacts(contacts);
 
             // Actualiza la tabla con los contactos filtrados por categoría
             const tableBody = document.querySelector('#contactsTableBody');
