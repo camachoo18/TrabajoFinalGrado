@@ -1,7 +1,7 @@
 # TrabajoFinalGrado
 
 ## Descripción
-Esta aplicación es una **agenda de contactos** con funcionalidades adicionales como monitoreo de URLs y autenticación de usuarios. Permite a los usuarios gestionar sus contactos, realizar búsquedas, monitorear el estado de URLs en tiempo real y alternar entre modos claro y oscuro. La aplicación está protegida mediante autenticación basada en tokens.
+Esta aplicación es una **agenda de contactos** con funcionalidades adicionales como monitoreo de URLs y autenticación de usuarios. Permite a los usuarios gestionar sus contactos, realizar búsquedas tanto de numero de telefono, email, nombre etcc.. y monitorear el estado de URLs en tiempo real. La aplicación está protegida mediante autenticación basada en tokens.
 
 ## Funcionalidades principales
 
