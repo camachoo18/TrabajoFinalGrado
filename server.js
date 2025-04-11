@@ -133,17 +133,22 @@ app.get('/checkAuth', (req, res) => {
 
 // Ruta para redirigir al usuario a Google para autenticarse
 app.get('/auth/google', (req, res) => {
-    const authUrl = getAuthUrl();
-    res.redirect(authUrl);
+    const authUrl = getAuthUrl(); // Generar la URL de autenticación
+    res.redirect(authUrl); // Redirigir al usuario a la URL de autenticación
 });
 
 // Ruta de callback para manejar el código de autorización
 app.get('/oauth2callback', async (req, res) => {
-    const code = req.query.code;
+    const code = req.query.code; // Obtener el código de autorización de la URL
     try {
-        const tokens = await getAccessToken(code);
+        const tokens = await getAccessToken(code); // Intercambiar el código por un token de acceso
         console.log('Tokens obtenidos:', tokens); // Depuración
-        res.redirect('/html/view-contacts.html'); // Redirigir a la vista de contactos
+
+        // Guardar los tokens en la sesión o base de datos si es necesario
+        req.session.tokens = tokens;
+
+        // Redirigir al usuario a la página de contactos
+        res.redirect('/html/view-contacts.html');
     } catch (err) {
         console.error('Error al obtener el token de acceso:', err);
         res.status(500).send('Error al autenticar con Google');
@@ -153,8 +158,13 @@ app.get('/oauth2callback', async (req, res) => {
 // Ruta para importar contactos desde Google
 app.get('/import-google-contacts', authenticateToken, async (req, res) => {
     try {
-        const contacts = await getGoogleContacts();
-        const userId = req.user.id;
+        const tokens = req.session.tokens; // Obtener los tokens de la sesión
+        if (!tokens) {
+            return res.status(401).json({ error: 'No autenticado con Google' });
+        }
+
+        const contacts = await getGoogleContacts(tokens); // Obtener los contactos desde Google
+        const userId = req.user.id; // ID del usuario autenticado
 
         // Guardar los contactos en la base de datos
         const stmt = db.prepare('INSERT INTO contacts (nombre, email, telefono, user_id) VALUES (?, ?, ?, ?)');

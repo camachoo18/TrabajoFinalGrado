@@ -122,7 +122,7 @@ document.getElementById('importGoogleContacts')?.addEventListener('click', async
             showFeedback('Contactos importados correctamente');
             loadContacts(); // Recargar la lista de contactos
         } else {
-            showFeedback('Error al importar contactos', false);
+            //showFeedback('Error al importar contactos', false);
         }
     } catch (err) {
         showFeedback(`Error de conexión: ${err.message}`, false);
