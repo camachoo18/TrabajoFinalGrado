@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elige tu Plan</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Elige tu Plan</h1>
+        <div class="plans">
+            <!-- Plan Gratuito -->
+            <div class="plan">
+                <h2>Gratuito</h2>
+                <p>Precio: $0/mes</p>
+                <ul>
+                    <li>Gestión de contactos</li>
+                    <li>Búsqueda avanzada</li>
+                </ul>
+                <button class="primary-button" onclick="showComingSoon()">Seleccionar</button>
+            </div>
+
+            <!-- Plan Premium -->
+            <div class="plan">
+                <h2>Premium</h2>
+                <p>Precio: $9.99/mes</p>
+                <ul>
+                    <li>Gestión de contactos</li>
+                    <li>Búsqueda avanzada</li>
+                    <li>Importar contactos de Google</li>
+                </ul>
+                <button class="primary-button" onclick="showComingSoon()">Seleccionar</button>
+            </div>
+
+            <!-- Plan VIP -->
+            <div class="plan">
+                <h2>VIP</h2>
+                <p>Precio: $19.99/mes</p>
+                <ul>
+                    <li>Gestión de contactos</li>
+                    <li>Búsqueda avanzada</li>
+                    <li>Importar contactos de Google</li>
+                    <li>Soporte prioritario</li>
+                </ul>
+                <button class="primary-button" onclick="showComingSoon()">Seleccionar</button>
+            </div>
+        </div>
+        <a href="/html/index.html" class="secondary-button">Volver</a>
+    </div>
+    <script>
+        function showComingSoon() {
+            alert("Próximamente...");
+        }
+    </script>
+</body>
+</html>
