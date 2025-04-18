@@ -44,27 +44,26 @@
             </tbody>
         </table>
         <!-- Formulario de edición -->
-<!-- Formulario de edición -->
-<form id="editForm" style="display: none;">
-    <input type="text" id="editNombre" placeholder="Nombre" required>
-    <input type="text" id="editTelefono" placeholder="Teléfono" required pattern="[0-9]{9}" maxlength="9">
-    <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
-    <textarea id="editNotas" placeholder="Notas"></textarea>
-    <select id="editCategoria" required>
-        <option value="Trabajo">Trabajo</option>
-        <option value="Amigos">Amigos</option>
-        <option value="Familia">Familia</option>
-        <option value="Sin Categoría">Sin Categoría</option>
-        <option value="Otra">Otra</option>
-    </select>
-    <button type="submit" id="saveEditButton" class="primary-button">Actualizar Contacto</button>
-</form>
+        <form id="editForm" style="display: none;">
+            <input type="text" id="editNombre" placeholder="Nombre" required>
+            <input type="text" id="editTelefono" placeholder="Teléfono" required pattern="[0-9]{9}" maxlength="9">
+            <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
+            <textarea id="editNotas" placeholder="Notas"></textarea>
+            <select id="editCategoria" required>
+                <option value="Trabajo">Trabajo</option>
+                <option value="Amigos">Amigos</option>
+                <option value="Familia">Familia</option>
+                <option value="Sin Categoría">Sin Categoría</option>
+                <option value="Otra">Otra</option>
+            </select>
+            <button type="submit" id="saveEditButton" class="primary-button">Actualizar Contacto</button>
+        </form>
 
         <!-- Navegación hacia la página de agregar contacto -->
         <div class="navigation">
             <button id="logoutButton" class="secondary-button">Cerrar Sesión</button>
             <a href="add-contact.html" class="secondary-button">Agregar Nuevo Contacto</a>
-            <button id="importGoogleContacts" class="secondary-button" onclick="window.location.href='/auth/google'">
+            <button id="importGoogleContacts" class="secondary-button">
                 Importar Contactos de Google
             </button>
         </div>
@@ -95,6 +94,26 @@
         // Redirigir a logout.html al hacer clic en el botón de cerrar sesión
         document.getElementById('logoutButton').addEventListener('click', () => {
             window.location.href = '/html/logout.html';
+        });
+
+        // Manejar la importación de contactos de Google
+        document.getElementById('importGoogleContacts').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/import-google-contacts', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                if (response.ok) {
+                    alert('Contactos importados correctamente');
+                    // Recargar la lista de contactos o realizar alguna acción adicional
+                } else if (response.status === 401) {
+                    // Si no está autenticado con Google, redirigir al flujo de autenticación
+                    window.location.href = '/auth/google';
+                } else {
+                    alert('Error al importar contactos');
+                }
+            } catch (err) {
+                console.error('Error al importar contactos:', err);
+            }
         });
     </script>
 

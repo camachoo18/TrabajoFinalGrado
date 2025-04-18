@@ -50,4 +50,4 @@ async function getGoogleContacts() {
     }
 }
 
-module.exports = { getAuthUrl, getAccessToken, getGoogleContacts };
+module.exports = { getAuthUrl, getAccessToken, getGoogleContacts, oAuth2Client };

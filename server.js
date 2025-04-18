@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const nunjucks = require('nunjucks');
 const session = require('express-session');
 
-const { getAuthUrl, getAccessToken, getGoogleContacts } = require('./src/googleAuth');
+const { getAuthUrl, getAccessToken, getGoogleContacts, oAuth2Client } = require('./src/googleAuth');
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -165,12 +165,19 @@ app.get('/oauth2callback', async (req, res) => {
 // Ruta para importar contactos desde Google
 app.get('/import-google-contacts', authenticateToken, async (req, res) => {
     try {
+        console.log('oAuth2Client:', oAuth2Client); // Verificar si oAuth2Client está definido
         const tokens = req.session.tokens; // Obtener los tokens de la sesión
         if (!tokens) {
-            return res.status(401).json({ error: 'No autenticado con Google' });
+            // Si no hay tokens en la sesión, redirigir al flujo de autenticación de Google
+            return res.status(401).json({ error: 'No autenticado con Google. Por favor, autentíquese nuevamente.' });
         }
 
-        const contacts = await getGoogleContacts(tokens); // Obtener los contactos desde Google
+        // Configurar los tokens en el cliente OAuth2
+        oAuth2Client.setCredentials(tokens);
+
+        // Obtener los contactos desde Google
+        const contacts = await getGoogleContacts();
+
         const userId = req.user.id; // ID del usuario autenticado
 
         // Guardar los contactos en la base de datos
