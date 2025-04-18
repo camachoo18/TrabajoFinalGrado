@@ -7,10 +7,18 @@ const port = 3000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nunjucks = require('nunjucks');
+const session = require('express-session');
+
 const { getAuthUrl, getAccessToken, getGoogleContacts } = require('./src/googleAuth');
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
+app.use(session({
+    secret: SECRET_KEY, // Cambia esto por una clave segura
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Cambia a true si usas HTTPS
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -143,7 +151,7 @@ app.get('/oauth2callback', async (req, res) => {
         const tokens = await getAccessToken(code); // Intercambiar el código por un token de acceso
         console.log('Tokens obtenidos:', tokens); // Depuración
 
-        // Guardar los tokens en la sesión o base de datos si es necesario
+        // Guardar los tokens en la sesión
         req.session.tokens = tokens;
 
         // Redirigir al usuario a la página de contactos
