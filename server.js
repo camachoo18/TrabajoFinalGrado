@@ -1,14 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const db = require('./database'); // Importa la base de datos desde el archivo database.js
+const db = require('./src/database'); // Importa la base de datos desde el archivo database.js
 const app = express();
 const port = 3000;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nunjucks = require('nunjucks');
-const axios = require('axios'); 
-const { getAuthUrl, getAccessToken, getGoogleContacts } = require('./public/js/googleAuth'); // Importa las funciones de autenticación de Google
+const { getAuthUrl, getAccessToken, getGoogleContacts } = require('./src/googleAuth');
 
 const SECRET_KEY = process.env.SECRET_KEY;
 

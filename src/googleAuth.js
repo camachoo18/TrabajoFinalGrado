@@ -2,8 +2,8 @@ const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 
-// Cargar las credenciales del archivo descargado desde Google Cloud Console
-const credentialsPath = path.join(__dirname, 'credentials.json');
+// filepath: public/js/googleAuth.js
+const credentialsPath = path.join(__dirname, './credentials.json'); // Cambiar la ruta // Cambiar la ruta
 const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
 
 // Ajustar para usar la clave "web" en lugar de "installed"
