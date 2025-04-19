@@ -24,7 +24,7 @@ async function getAccessToken(code) {
     try {
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens); // Configurar el token en el cliente
-        console.log('Tokens obtenidos:', tokens); // Depuración
+        //console.log('Tokens obtenidos:', tokens); // Depuración
         return tokens;
     } catch (err) {
         console.error('Error al obtener el token de acceso:', err);
@@ -42,7 +42,7 @@ async function getGoogleContacts() {
             personFields: 'names,emailAddresses,phoneNumbers',
         });
 
-        console.log('Contactos obtenidos de Google:', response.data.connections);
+        //console.log('Contactos obtenidos de Google:', response.data.connections);DEPURACION INFO CONTACTS
         return response.data.connections || [];
     } catch (err) {
         console.error('Error al obtener contactos de Google:', err);

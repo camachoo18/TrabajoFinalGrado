@@ -149,7 +149,7 @@ app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code; // Obtener el código de autorización de la URL
     try {
         const tokens = await getAccessToken(code); // Intercambiar el código por un token de acceso
-        console.log('Tokens obtenidos:', tokens); // Depuración
+        //console.log('Tokens obtenidos:', tokens); // Depuración tokken authgoogle
 
         // Guardar los tokens en la sesión
         req.session.tokens = tokens;
@@ -165,10 +165,8 @@ app.get('/oauth2callback', async (req, res) => {
 // Ruta para importar contactos desde Google
 app.get('/import-google-contacts', authenticateToken, async (req, res) => {
     try {
-        console.log('oAuth2Client:', oAuth2Client); // Verificar si oAuth2Client está definido
         const tokens = req.session.tokens; // Obtener los tokens de la sesión
         if (!tokens) {
-            // Si no hay tokens en la sesión, redirigir al flujo de autenticación de Google
             return res.status(401).json({ error: 'No autenticado con Google. Por favor, autentíquese nuevamente.' });
         }
 
@@ -180,16 +178,49 @@ app.get('/import-google-contacts', authenticateToken, async (req, res) => {
 
         const userId = req.user.id; // ID del usuario autenticado
 
-        // Guardar los contactos en la base de datos
-        const stmt = db.prepare('INSERT INTO contacts (nombre, email, telefono, user_id) VALUES (?, ?, ?, ?)');
+        // Preparar la consulta para verificar duplicados
+        const checkDuplicateQuery = 'SELECT COUNT(*) AS count FROM contacts WHERE telefono = ? AND user_id = ?';
+
+        // Preparar la consulta para insertar contactos
+        const insertContactQuery = `
+            INSERT INTO contacts (nombre, email, telefono, user_id)
+            VALUES (?, ?, ?, ?)
+        `;
+
+        const stmtCheckDuplicate = db.prepare(checkDuplicateQuery);
+        const stmtInsertContact = db.prepare(insertContactQuery);
+
         contacts.forEach(contact => {
             try {
                 const nombre = contact.names?.[0]?.displayName || 'Sin Nombre';
                 const email = contact.emailAddresses?.[0]?.value || '';
                 const telefono = contact.phoneNumbers?.[0]?.value || '';
-                stmt.run(nombre, email, telefono, userId);
+
+                if (!telefono) {
+                    console.log(`El contacto "${nombre}" no tiene número de teléfono. No se verificará duplicado.`);
+                    return; // Omitir contactos sin número de teléfono
+                }
+
+                // Verificar si el contacto ya existe por número de teléfono
+                stmtCheckDuplicate.get([telefono, userId], (err, row) => {
+                    if (err) {
+                        console.error('Error al verificar duplicados:', err);
+                        return;
+                    }
+
+                    if (row.count === 0) {
+                        // Si no existe, insertar el contacto
+                        stmtInsertContact.run([nombre, email, telefono, userId], (err) => {
+                            if (err) {
+                                console.error('Error al insertar contacto:', err);
+                            }
+                        });
+                    } else {
+                        //console.log(`El contacto con teléfono ${telefono} ya existe. No se insertará.`); DEBUG TELEFONOS
+                    }
+                });
             } catch (err) {
-                console.error('Error al guardar contacto en la base de datos:', err);
+                console.error('Error al procesar contacto:', err);
             }
         });
 
