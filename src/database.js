@@ -5,7 +5,7 @@ const db = new sqlite3.Database('contacts.db', (err) => {
     if (err) {
         console.error('Error al conectar a la base de datos:', err.message);
     } else {
-        console.log('Conectado a la base de datos SQLite.');
+        //console.log('Conectado a la base de datos SQLite.'); Debug conexion bbdd sqlite
     }
 });
 
@@ -31,7 +31,7 @@ db.all("PRAGMA table_info(contacts);", (err, rows) => {
             }
         });
     } else {
-        console.log('La columna `user_id` ya existe en la tabla `contacts`.');
+        //console.log('La columna `user_id` ya existe en la tabla `contacts`.'); Debug columna user_id existe
     }
 });
 
@@ -46,7 +46,7 @@ db.run(`
     if (err) {
         console.error('Error al crear la tabla de usuarios:', err.message);
     } else {
-        console.log('Tabla de usuarios creada (o ya existe).');
+        //console.log('Tabla de usuarios creada (o ya existe).'); Debug tabla usuarios creada
     }
 });
 // Función para mostrar feedback
@@ -117,7 +117,7 @@ db.run(`
     if (err) {
         console.error('Error al crear la tabla de categorías:', err.message);
     } else {
-        console.log('Tabla de categorías creada (o ya existe).');
+       // console.log('Tabla de categorías creada (o ya existe).'); Debug tabla categorias creada
 
         // Insertar categorías predeterminadas si no existen
         const defaultCategories = ['Trabajo', 'Amigos', 'Familia', 'Sin Categoría'];
