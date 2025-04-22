@@ -26,6 +26,8 @@ const contactRoutes = require('./routes/contactRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const googleRoutes = require('./routes/googleRoutes');
 
+// Importar middleware
+const authenticateToken = require('./middlewares/authenticateToken');
 
 // Configuración de middlewares
 app.use(cors({
@@ -33,29 +35,13 @@ app.use(cors({
     credentials: true
 }));
 
-// Middleware para verificar token JWT
-const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No se proporcionó token de autenticación' });
-    }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({ error: 'Token inválido o expirado' });
-    }
-};
-
-// Rutas API
-
+// Rutas API protegidas con authenticateToken
 app.use('/auth', authRoutes);
-app.use('/contacts', verifyToken, contactRoutes);
-app.use('/categories', verifyToken, categoryRoutes);
-app.use('/google', verifyToken, googleRoutes);
+//app.use('/contacts/search', authenticateToken, contactRoutes);
+app.use('/contacts', authenticateToken, contactRoutes);
+app.use('/categories', authenticateToken, categoryRoutes);
+app.use('/google', authenticateToken, googleRoutes);
 
 // Rutas para servir archivos HTML
 app.get('/', (req, res) => {
