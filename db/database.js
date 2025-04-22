@@ -1,14 +1,34 @@
 const sqlite3 = require('sqlite3').verbose();
-
+const path = require('path');
+const dbPath = path.join(__dirname, '.', 'contacts.db');
 // Crear o abrir la base de datos SQLite
-const db = new sqlite3.Database('contacts.db', (err) => {
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error al conectar a la base de datos:', err.message);
     } else {
-        //console.log('Conectado a la base de datos SQLite.'); Debug conexion bbdd sqlite
+        console.log('Conectado a la base de datos SQLite');
     }
 });
-
+// Crear tabla de contactos si no existe
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            telefono TEXT,
+            email TEXT,
+            notas TEXT,
+            categoria TEXT,
+            user_id INTEGER
+        )
+    `, (err) => {
+        if (err) {
+            console.error('Error al crear la tabla contacts:', err.message);
+        } else {
+            console.log('Tabla contacts verificada o creada.');
+        }
+    });
+});
 // Verificar si la columna `user_id` existe en la tabla `contacts`
 db.all("PRAGMA table_info(contacts);", (err, rows) => {
     if (err) {
@@ -49,63 +69,9 @@ db.run(`
         //console.log('Tabla de usuarios creada (o ya existe).'); Debug tabla usuarios creada
     }
 });
-// Función para mostrar feedback
-function showFeedback(message, success = true) {
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
-}
 
-// Cargar categorías desde el servidor
-async function loadCategories() {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/categories', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-            const categories = await response.json();
-            const categorySelect = document.getElementById('categoria');
-            const filterSelect = document.getElementById('filtroCategoria');
 
-            if (categorySelect) {
-                categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
-            }
-            if (filterSelect) {
-                filterSelect.innerHTML = '<option value="">Todas las categorías</option>';
-            }
 
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                if (categorySelect) {
-                    categorySelect.appendChild(option);
-                }
-                if (filterSelect) {
-                    const filterOption = document.createElement('option');
-                    filterOption.value = category;
-                    filterOption.textContent = category;
-                    filterSelect.appendChild(filterOption);
-                }
-            });
-
-            // Añadir opción "Otra" al formulario de agregar contacto
-            if (categorySelect) {
-                const otherOption = document.createElement('option');
-                otherOption.value = 'Otra';
-                otherOption.textContent = 'Otra';
-                categorySelect.appendChild(otherOption);
-            }
-        } else {
-            showFeedback('Error al cargar categorías', false);
-        }
-    } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
-    }
-}
 
 // Crear la tabla de categorías si no existe
 db.run(`

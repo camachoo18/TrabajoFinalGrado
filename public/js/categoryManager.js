@@ -31,16 +31,16 @@ async function loadCategories() {
             // Agregar categorías dinámicas desde el servidor
             categories.forEach(category => {
                 const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
+                option.value = category.nombre;
+                option.textContent = category.nombre;
 
                 if (categorySelect) {
                     categorySelect.appendChild(option);
                 }
                 if (filterSelect) {
                     const filterOption = document.createElement('option');
-                    filterOption.value = category;
-                    filterOption.textContent = category;
+                    filterOption.value = category.nombre;
+                    filterOption.textContent = category.nombre;
                     filterSelect.appendChild(filterOption);
                 }
             });

@@ -1,84 +1,138 @@
-document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+// Función para verificar el estado de autenticación
+async function checkAuth() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            return false;
+        }
+
+        const response = await fetch('http://localhost:3000/auth/isAuthenticated', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                return false;
+            }
+            throw new Error('Error al verificar autenticación');
+        }
+
+        const data = await response.json();
+        return data.authenticated;
+    } catch (error) {
+        console.error('Error al verificar autenticación:', error);
+        localStorage.removeItem('token');
+        return false;
+    }
+}
+
+// Función para manejar el login
+async function handleLogin(event) {
+    event.preventDefault();
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const response = await fetch('/login', {
+        const response = await fetch('http://localhost:3000/auth/login', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ username, password })
         });
-        const data = await response.json();
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            showVisualFeedback('Inicio de sesión exitoso');
-        } else {
-            showFeedback(data.error, false);
-        }
-    } catch (err) {
-        showFeedback('Error al iniciar sesión', false);
-    }
-});
 
-document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error en el login');
+        }
+
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        window.location.href = '/index.html';
+    } catch (error) {
+        console.error('Error en el login:', error);
+        alert(error.message);
+    }
+}
+
+// Función para manejar el registro
+async function handleRegister(event) {
+    event.preventDefault();
     const username = document.getElementById('registerUsername').value;
-    const password = document.getElementById('registerPassword').value;
+    const password = document.getElementById('registerPassword').value
 
     try {
-        const response = await fetch('/register', {
+        const response = await fetch('http://localhost:3000/auth/register', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ username, password })
         });
-        const data = await response.json();
-        if (response.ok) {
-            showFeedback('Registro exitoso');
-            setTimeout(() => {
-                window.location.href = '/html/login.html'; // Redirigir a la página de inicio de sesión después de 2 segundos
-            }, 2000);
-        } else {
-            showFeedback(data.error, false);
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error en el registro');
         }
-    } catch (err) {
-        showFeedback('Error al registrarse', false);
+
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        window.location.href = '/index.html';
+    } catch (error) {
+        console.error('Error en el registro:', error);
+        alert(error.message);
     }
-});
+}
 
-// Redirigir a logout.html al hacer clic en el botón de cerrar sesión
-document.getElementById('logoutButton')?.addEventListener('click', () => {
-    window.location.href = '/html/logout.html';
-});
-
-// Verificar si el usuario está autenticado al cargar la página
-document.addEventListener('DOMContentLoaded', async () => {
-    const currentPath = window.location.pathname;
-    const protectedPaths = ['/html/index.html', '/html/view-contacts.html', '/html/add-contact.html'];
-
+// Función para manejar el logout
+async function handleLogout() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/checkAuth', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
+        if (token) {
+            await fetch('http://localhost:3000/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+        }
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    } catch (error) {
+        console.error('Error en el logout:', error);
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+    }
+}
 
-        if (data.authenticated) {
-            // Si el usuario está autenticado y está en la página de inicio o login, redirigir a index.html
-            if (currentPath === '/' || currentPath === '/html/login.html' || currentPath === '/html/register.html') {
-                window.location.href = '/html/index.html';
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const logoutButton = document.getElementById('logoutButton');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+
+    if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
+    }
+
+    // Verificar autenticación al cargar la página
+    if (window.location.pathname !== '/login.html' && window.location.pathname !== '/register.html') {
+        checkAuth().then(authenticated => {
+            if (!authenticated) {
+                window.location.href = '/login.html';
             }
-        } else {
-            // Si el usuario no está autenticado y está en una página protegida, redirigir a la página de inicio
-            if (protectedPaths.includes(currentPath)) {
-                window.location.href = '/';
-            }
-        }
-    } catch (err) {
-        console.error('Error al verificar autenticación:', err);
-        if (protectedPaths.includes(currentPath)) {
-            window.location.href = '/';
-        }
+        });
     }
 });
 

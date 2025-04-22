@@ -97,7 +97,7 @@ async function saveEdits(contactId) {
     }
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`/contacts/edit/${contactId}`, {
+    const response = await fetch(`/contacts/${contactId}`, { // Sirve para editar contactos
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     const email = document.getElementById('email').value.trim();
     const notas = document.getElementById('notas').value.trim();
     const categoria = document.getElementById('categoria').value;
-    let nuevaCategoria = document.getElementById('nuevaCategoria')?.value.trim(); // Puede ser opcional
+    let nuevaCategoria = document.getElementById('nuevaCategoria')?.value.trim();
 
     // Limpiar el número de teléfono de caracteres no numéricos
     telefono = telefono.replace(/\D/g, '');
@@ -239,20 +239,22 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     }
 
     // Si el usuario selecciona "Otra", usar la nueva categoría
-    const categoriaFinal = (categoria === 'Otra' && nuevaCategoria) ? nuevaCategoria : categoria;
+    let categoriaFinal = (categoria === 'Otra' && nuevaCategoria) ? nuevaCategoria : categoria;
 
-    // Crear el contacto
+    // Crear el objeto de contacto
     const contact = { nombre, telefono, email, notas, categoria: categoriaFinal };
+
+    //console.log('Contacto enviado al backend:', contact); // Depuración
 
     // Enviar el contacto al backend
     const token = localStorage.getItem('token');
-    const response = await fetch('/add', {
+    const response = await fetch('/contacts', {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}` // Token JWT
         },
-        body: JSON.stringify(contact),
+        body: JSON.stringify(contact), 
     });
 
     // Manejar respuesta
@@ -333,7 +335,7 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`/contacts/edit/${id}`, {
+        const response = await fetch(`/contacts/${id}`, { // Para editar contacto y guardarlo
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -379,7 +381,7 @@ async function filterContactsByCategory(categoria) {
 // Función para eliminar un contacto
 async function deleteContact(id) {
     const token = localStorage.getItem('token');
-    const response = await fetch(`/contacts/delete/${id}`, { 
+    const response = await fetch(`/contacts/${id}`, { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     });

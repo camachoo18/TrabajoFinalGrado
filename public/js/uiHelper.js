@@ -108,7 +108,7 @@ async function saveEdits(contactId) {
 
     const token = localStorage.getItem('token');
     try {
-        const response = await fetch(`/contacts/edit/${contactId}`, {
+        const response = await fetch(`/contacts/${contactId}`, { // para editar el contacto y guardarlo
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
