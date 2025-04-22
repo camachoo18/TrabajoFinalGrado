@@ -96,22 +96,19 @@ class ContactController {
     }
     static async search(req, res) {
         try {
-            const { q } = req.query; // Obtener el término de búsqueda de la query string
-            if (!q || q.trim() === '') {
+            const query = req.query.q || ''; // Obtener el término de búsqueda
+            const userId = req.user.id; // ID del usuario autenticado
+    
+            if (query.trim() === '') {
                 return res.status(400).json({ error: 'Se requiere un término de búsqueda válido' });
             }
     
-            console.log('Término de búsqueda recibido:', q); // Depuración
-    
-            const userId = req.user.id; // ID del usuario autenticado
-            const contacts = await Contact.search(q.trim(), userId); // Buscar contactos en la base de datos
+            const contacts = await Contact.search(query.trim(), userId); // Buscar contactos en la base de datos
     
             if (contacts.length === 0) {
-                console.log('No se encontraron contactos para el término:', q); // Depuración
-                return res.status(404).json({ message: 'No se encontraron contactos' });
+                return res.status(404).json({ error: 'Contacto no encontrado' });
             }
     
-            console.log('Contactos encontrados:', contacts); // Depuración
             res.json(contacts);
         } catch (error) {
             console.error('Error al buscar contactos:', error);

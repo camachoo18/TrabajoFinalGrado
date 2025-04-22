@@ -1,170 +1,54 @@
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('#contactList tbody')) {
-        loadContacts();
-        loadCategories(); // Cargar categorías al iniciar la página
-    }
-});
-
-// Función para mostrar feedback
-function showFeedback(message, success = true) {
-    // Crear el contenedor de feedback dinámicamente
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-
-    // Eliminar el feedback después de 3 segundos
-    setTimeout(() => feedback.remove(), 3000);
-}
-
-// Función para alternar el modo de edición
-function toggleEditMode(row, contactId) {
-    const token = localStorage.getItem('token');
-    fetch(`/contacts/${contactId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-        .then(response => response.json())
-        .then(contact => {
-            if (!contact) {
-                console.error('Contacto no encontrado');
-                return;
-            }
-
-            // Cargar los datos del contacto en el formulario de edición
-            document.querySelector('#editNombre').value = contact.nombre;
-            document.querySelector('#editTelefono').value = contact.telefono;
-            document.querySelector('#editEmail').value = contact.email;
-            document.querySelector('#editNotas').value = contact.notas;
-            document.querySelector('#editCategoria').value = contact.categoria;
-
-            // Mostrar el formulario de edición
-            const editForm = document.querySelector('#editForm');
-            editForm.style.display = 'block';
-
-            // Calcular la posición del formulario y desplazar la página
-            const formPosition = editForm.getBoundingClientRect().top + window.scrollY;
-            window.scrollTo({
-                top: formPosition - 20, // Ajusta el desplazamiento para dejar un margen
-                behavior: 'smooth' // Desplazamiento suave
-            });
-
-            // Guardar los cambios
-            document.querySelector('#saveEditButton').onclick = () => {
-                saveEdits(contactId);
-            };
-        })
-        .catch(error => {
-            console.error('Error al obtener el contacto:', error);
-        });
-}
-
-function validateContact(contact) {
-    // Validar que el nombre no esté vacío
-    if (!contact.nombre.trim()) return 'El nombre no puede estar vacío.';
-
-    // Validar que el nombre no contenga etiquetas HTML o JavaScript
-    const scriptRegex = /<script[\s\S]*?>[\s\S]*?<\/script>/gi; // Detecta etiquetas <script>
-    const htmlRegex = /<\/?[a-z][\s\S]*>/i; // Detecta cualquier etiqueta HTML
-    if (scriptRegex.test(contact.nombre) || htmlRegex.test(contact.nombre)) {
-        return 'El nombre no puede contener etiquetas HTML o código malicioso.';
-    }
-
-    // Validar que el teléfono tenga 9 dígitos
-    if (!/^\d{9}$/.test(contact.telefono)) return 'El teléfono debe tener 9 dígitos.';
-
-    // Validar que el correo tenga un formato válido
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return 'El correo electrónico no es válido.';
-
-    // Validar que la categoría no esté vacía
-    if (!contact.categoria.trim()) return 'Debe seleccionar una categoría.';
-
-    return null; // Devuelve null si todo está bien
-}
-
-async function saveEdits(contactId) {
-    const updatedContact = {
-        nombre: document.querySelector('#editNombre').value,
-        telefono: document.querySelector('#editTelefono').value,
-        email: document.querySelector('#editEmail').value,
-        notas: document.querySelector('#editNotas').value,
-        categoria: document.querySelector('#editCategoria').value,
-    };
-
-    const validationError = validateContact(updatedContact);
-    if (validationError) {
-        showFeedback(validationError, false);
-        return; // Detener el flujo si hay un error de validación
-    }
-
-    const token = localStorage.getItem('token');
-    const response = await fetch(`/contacts/${contactId}`, { // Sirve para editar contactos
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updatedContact),
-    });
-
-    if (response.ok) {
-        showFeedback('Contacto actualizado correctamente');
-        loadContacts(); // Recargar la lista de contactos
-    } else {
-        showFeedback('Error al actualizar el contacto', false);
-    }
-}
-document.getElementById('importGoogleContacts')?.addEventListener('click', async () => {
-    try {
-        const response = await fetch('/import-google-contacts', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (response.ok) {
-            showFeedback('Contactos importados correctamente');
-            loadContacts(); // Recargar la lista de contactos
-        } else {
-            //showFeedback('Error al importar contactos', false);
-        }
-    } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
-    }
-});
-
-// Verificar si un teléfono ya está registrado
-async function isDuplicatePhone(phone) {
+// Función para buscar contactos dinámicamente
+async function searchContacts(query) {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/contacts', {
+        const response = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (response.ok) {
             const contacts = await response.json();
-            return contacts.some(contact => contact.telefono.trim() === phone.trim());
+            renderContacts(contacts);
+        } else if (response.status === 404) {
+            renderContacts([]); // Mostrar mensaje de "No se encontraron contactos"
+        } else {
+            const error = await response.json();
+            console.error('Error al buscar contactos:', error);
+            showFeedback(error.error || 'Error al buscar contactos', false);
         }
     } catch (err) {
+        console.error('Error al buscar contactos:', err);
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
-    return false;
 }
 
-// Función para cargar contactos
+// Event listener para la búsqueda dinámica
+document.getElementById('searchInput')?.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+    searchContacts(query);
+});
+
+// Función para cargar todos los contactos
 async function loadContacts() {
     try {
         const token = localStorage.getItem('token');
         const response = await fetch('/contacts', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (response.ok) {
             const contacts = await response.json();
-            renderContacts(contacts); // Renderizar los contactos en la tabla
+            renderContacts(contacts); // Renderizar todos los contactos
         } else {
             showFeedback('Error al cargar contactos', false);
         }
     } catch (err) {
+        console.error('Error al cargar contactos:', err);
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 
-// Función para renderizar contactos
+// Función para renderizar contactos en la tabla
 function renderContacts(contacts) {
     const tableBody = document.querySelector('#contactsTableBody');
     if (!tableBody) {
@@ -172,11 +56,16 @@ function renderContacts(contacts) {
         return;
     }
 
-    tableBody.innerHTML = ''; // Limpia el contenido actual
+    tableBody.innerHTML = ''; // Limpiar el contenido actual
+
+    if (contacts.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6">No se encontraron contactos</td></tr>';
+        return;
+    }
 
     contacts.forEach(contact => {
         const row = document.createElement('tr');
-        row.dataset.id = contact.id; // Guardar el ID en la fila
+        row.dataset.id = contact.id;
 
         const nombreCell = document.createElement('td');
         nombreCell.textContent = contact.nombre;
@@ -195,11 +84,10 @@ function renderContacts(contacts) {
         row.appendChild(categoriaCell);
 
         const notasCell = document.createElement('td');
-        notasCell.textContent = contact.notas;
+        notasCell.textContent = contact.notas || '';
         row.appendChild(notasCell);
 
         const actionsCell = document.createElement('td');
-
         const editButton = document.createElement('button');
         editButton.textContent = 'Editar';
         editButton.className = 'edit';
@@ -217,196 +105,7 @@ function renderContacts(contacts) {
     });
 }
 
-// Función para agregar un contacto
-document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Obtener valores del formulario
-    const nombre = document.getElementById('nombre').value.trim();
-    let telefono = document.getElementById('telefono').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const notas = document.getElementById('notas').value.trim();
-    const categoria = document.getElementById('categoria').value;
-    let nuevaCategoria = document.getElementById('nuevaCategoria')?.value.trim();
-
-    // Limpiar el número de teléfono de caracteres no numéricos
-    telefono = telefono.replace(/\D/g, '');
-
-    // Verificar duplicados por teléfono
-    if (await isDuplicatePhone(telefono)) {
-        showFeedback('El número de teléfono ya está registrado.', false);
-        return;
-    }
-
-    // Si el usuario selecciona "Otra", usar la nueva categoría
-    let categoriaFinal = (categoria === 'Otra' && nuevaCategoria) ? nuevaCategoria : categoria;
-
-    // Crear el objeto de contacto
-    const contact = { nombre, telefono, email, notas, categoria: categoriaFinal };
-
-    //console.log('Contacto enviado al backend:', contact); // Depuración
-
-    // Enviar el contacto al backend
-    const token = localStorage.getItem('token');
-    const response = await fetch('/contacts', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // Token JWT
-        },
-        body: JSON.stringify(contact), 
-    });
-
-    // Manejar respuesta
-    if (response.ok) {
-        const responseBody = await response.json();
-        loadContacts(); // Recargar lista de contactos
-        showFeedback(`Contacto "${contact.nombre}" añadido correctamente`);
-
-        // Si se agregó una nueva categoría, recargar las categorías
-        if (categoria === 'Otra' && nuevaCategoria) {
-            loadCategories();
-        }
-    } else {
-        const responseBody = await response.json();
-        console.error('Error al agregar contacto:', responseBody);
-        showFeedback(responseBody.error || 'Error al agregar contacto', false);
-    }
-});
-
-// Editar un contacto (mostrar datos en el formulario)
-function toggleEditMode(row, contactId) {
-    console.log('toggleEditMode llamado para el contacto con ID:', contactId); // Depuración
-    const token = localStorage.getItem('token');
-    fetch(`/contacts/${contactId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-    })
-        .then(response => response.json())
-        .then(contact => {
-            if (!contact) {
-                console.error('Contacto no encontrado');
-                return;
-            }
-
-            // Cargar los datos del contacto en el formulario de edición
-            document.querySelector('#editNombre').value = contact.nombre;
-            document.querySelector('#editTelefono').value = contact.telefono;
-            document.querySelector('#editEmail').value = contact.email;
-            document.querySelector('#editNotas').value = contact.notas;
-            document.querySelector('#editCategoria').value = contact.categoria;
-
-            // Establecer el ID del contacto en el formulario de edición
-            const editForm = document.querySelector('#editForm');
-            editForm.dataset.id = contactId; // Guardar el ID en el atributo dataset
-
-            // Mostrar el formulario de edición
-            editForm.style.display = 'block';
-
-            // Desplazar la página para que el formulario sea visible
-            editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Guardar los cambios
-            document.querySelector('#saveEditButton').onclick = () => {
-                saveEdits(contactId);
-            };
-        })
-        .catch(error => {
-            console.error('Error al obtener el contacto:', error);
-        });
-}
-
-// Función para guardar los cambios en el contacto despues de editar
-document.getElementById('editForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const id = document.getElementById('editForm').dataset.id; // Obtener el ID del contacto
-    if (!id) {
-        showFeedback('Error: No se pudo identificar el contacto a editar.', false);
-        return;
-    }
-
-    const nombre = document.getElementById('editNombre').value.trim();
-    const telefono = document.getElementById('editTelefono').value.trim();
-    const email = document.getElementById('editEmail').value.trim();
-    const notas = document.getElementById('editNotas').value.trim();
-    const categoria = document.getElementById('editCategoria').value;
-
-    const contact = { nombre, telefono, email, notas, categoria };
-
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/contacts/${id}`, { // Para editar contacto y guardarlo
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(contact),
-        });
-
-        if (response.ok) {
-            showFeedback('Contacto actualizado correctamente');
-            loadContacts(); // Recargar la lista de contactos
-            document.getElementById('editForm').style.display = 'none'; // Ocultar el formulario de edición
-        } else {
-            const error = await response.json();
-            showFeedback(error.error || 'Error al actualizar contacto', false);
-        }
-    } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
-    }
-});
-
-// Función para filtrar contactos por categoría
-async function filterContactsByCategory(categoria) {
-    try {
-        const token = localStorage.getItem('token');
-
-        // Si la categoría es "Todas" o está vacía, cargar todos los contactos
-        if (!categoria || categoria === 'Todas') {
-            await loadContacts(); // Llama a la función para cargar todos los contactos
-            return; // Detener la ejecución aquí
-        }
-
-        const url = `/contacts/category/${encodeURIComponent(categoria)}`; // Usar la ruta con :categoryId
-        const response = await fetch(url, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const contacts = await response.json();
-            renderContacts(contacts); // Renderizar los contactos filtrados
-        } else {
-            const error = await response.json();
-            console.error('Error al filtrar contactos:', error);
-            showFeedback(error.error || 'Error al cargar contactos filtrados por categoría', false);
-        }
-    } catch (err) {
-        console.error('Error al cargar contactos:', err);
-        showFeedback(`Error de conexión: ${err.message}`, false);
-    }
-}
-// Función para eliminar un contacto
-async function deleteContact(id) {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`/contacts/${id}`, { 
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (response.ok) {
-        const selectedCategory = document.getElementById('filtroCategoria').value;
-        if (selectedCategory && selectedCategory !== 'Todas') {
-            filterContactsByCategory(selectedCategory); // Volver a aplicar el filtro
-        } else {
-            loadContacts(); // Recargar todos los contactos si no hay filtro
-        }
-        showFeedback('Contacto eliminado correctamente');
-    } else {
-        showFeedback('Error al eliminar contacto', false);
-    }
-}
-// Filtrar por categoría
-document.getElementById('filtroCategoria')?.addEventListener('change', (e) => {
-    const categoria = e.target.value;
-    filterContactsByCategory(categoria);
+// Llamar a loadContacts() al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    loadContacts(); // Cargar todos los contactos al inicio
 });

@@ -71,7 +71,7 @@ class Contact {
                 )
             `;
     
-            console.log('Consulta SQL:', sql); // Depuración
+            console.log('Consulta SQL para búsqueda:', sql); // Depuración
             console.log('Parámetros:', [userId, searchTerm, searchTerm, searchTerm, searchTerm]); // Depuración
     
             db.all(sql, [userId, searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
