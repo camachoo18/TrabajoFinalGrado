@@ -60,22 +60,50 @@ class Contact {
 
     static async search(query, userId) {
         return new Promise((resolve, reject) => {
-            const searchTerm = `%${query}%`;
-            db.all('SELECT * FROM contacts WHERE user_id = ? AND (nombre LIKE ? OR telefono LIKE ? OR email LIKE ? OR notas LIKE ?)',
-                [userId, searchTerm, searchTerm, searchTerm, searchTerm],
-                (err, rows) => {
-                    if (err) reject(err);
+            const searchTerm = `%${query}%`; // Usar comodines para la búsqueda
+            const sql = `
+                SELECT * FROM contacts
+                WHERE user_id = ? AND (
+                    nombre LIKE ? OR
+                    telefono LIKE ? OR
+                    email LIKE ? OR
+                    notas LIKE ?
+                )
+            `;
+    
+            console.log('Consulta SQL:', sql); // Depuración
+            console.log('Parámetros:', [userId, searchTerm, searchTerm, searchTerm, searchTerm]); // Depuración
+    
+            db.all(sql, [userId, searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
+                if (err) {
+                    console.error('Error al buscar contactos:', err.message);
+                    reject(err);
+                } else {
+                    console.log('Resultados de búsqueda:', rows); // Depuración
                     resolve(rows);
                 }
-            );
+            });
         });
     }
 
-    static async filterByCategory(categoryId, userId) {
+    static async filterByCategory(categoria, userId) {
         return new Promise((resolve, reject) => {
-            db.all('SELECT * FROM contacts WHERE categoria = ? AND user_id = ?', [categoryId, userId], (err, rows) => {
-                if (err) reject(err);
-                resolve(rows);
+            const sql = `
+                SELECT * FROM contacts
+                WHERE categoria = ? AND user_id = ?
+            `;
+    
+            console.log('Consulta SQL para filtrar por categoría:', sql); // Depuración
+            console.log('Parámetros:', [categoria, userId]); // Depuración
+    
+            db.all(sql, [categoria, userId], (err, rows) => {
+                if (err) {
+                    console.error('Error al filtrar contactos por categoría:', err.message);
+                    reject(err);
+                } else {
+                    console.log('Contactos filtrados por categoría:', rows); // Depuración
+                    resolve(rows);
+                }
             });
         });
     }

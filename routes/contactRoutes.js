@@ -17,5 +17,6 @@ router.delete('/:id', contactController.delete);
 // Rutas adicionales
 router.get('/search', contactController.search);
 router.get('/category/:categoryId', contactController.filterByCategory);
+router.get('/filter', contactController.filterByCategory);
 
 module.exports = router; 

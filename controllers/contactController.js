@@ -94,25 +94,44 @@ class ContactController {
             res.status(500).json({ error: 'Error al eliminar contacto' });
         }
     }
-
     static async search(req, res) {
         try {
-            const { q } = req.query;
-            if (!q) {
-                return res.status(400).json({ error: 'Se requiere un término de búsqueda' });
+            const { q } = req.query; // Obtener el término de búsqueda de la query string
+            if (!q || q.trim() === '') {
+                return res.status(400).json({ error: 'Se requiere un término de búsqueda válido' });
             }
-            const contacts = await Contact.search(q, req.user.id);
+    
+            console.log('Término de búsqueda recibido:', q); // Depuración
+    
+            const userId = req.user.id; // ID del usuario autenticado
+            const contacts = await Contact.search(q.trim(), userId); // Buscar contactos en la base de datos
+    
+            if (contacts.length === 0) {
+                console.log('No se encontraron contactos para el término:', q); // Depuración
+                return res.status(404).json({ message: 'No se encontraron contactos' });
+            }
+    
+            console.log('Contactos encontrados:', contacts); // Depuración
             res.json(contacts);
         } catch (error) {
             console.error('Error al buscar contactos:', error);
             res.status(500).json({ error: 'Error al buscar contactos' });
         }
     }
-
     static async filterByCategory(req, res) {
         try {
-            const { categoryId } = req.params;
-            const contacts = await Contact.filterByCategory(categoryId, req.user.id);
+            const categoria = req.params.categoryId; // Obtener la categoría del parámetro de ruta
+            const userId = req.user.id; // ID del usuario autenticado
+    
+            if (!categoria || categoria.trim() === '') {
+                return res.status(400).json({ error: 'La categoría es requerida' });
+            }
+    
+            const contacts = await Contact.filterByCategory(categoria.trim(), userId); // Filtrar contactos por categoría
+            if (contacts.length === 0) {
+                return res.status(404).json({ message: 'No se encontraron contactos para esta categoría' });
+            }
+    
             res.json(contacts);
         } catch (error) {
             console.error('Error al filtrar contactos:', error);

@@ -361,20 +361,28 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
 async function filterContactsByCategory(categoria) {
     try {
         const token = localStorage.getItem('token');
-        let url = '/contacts/filter';
-        if (categoria && categoria !== 'Todas') {
-            url += `?categoria=${encodeURIComponent(categoria)}`;
+
+        // Si la categoría es "Todas" o está vacía, cargar todos los contactos
+        if (!categoria || categoria === 'Todas') {
+            await loadContacts(); // Llama a la función para cargar todos los contactos
+            return; // Detener la ejecución aquí
         }
+
+        const url = `/contacts/category/${encodeURIComponent(categoria)}`; // Usar la ruta con :categoryId
         const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+
         if (response.ok) {
             const contacts = await response.json();
-            renderContacts(contacts);
+            renderContacts(contacts); // Renderizar los contactos filtrados
         } else {
-            showFeedback('Error al cargar contactos filtrados por categoría', false);
+            const error = await response.json();
+            console.error('Error al filtrar contactos:', error);
+            showFeedback(error.error || 'Error al cargar contactos filtrados por categoría', false);
         }
     } catch (err) {
+        console.error('Error al cargar contactos:', err);
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
