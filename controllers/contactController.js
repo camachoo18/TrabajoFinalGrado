@@ -49,6 +49,7 @@ class ContactController {
                 categoria: categoria?.trim(),
                 user_id: req.user.id // Asegúrate de que el middleware `verifyToken` esté configurado
             };
+            
 
             const id = await Contact.create(contactData);
             res.status(201).json({ id, ...contactData });
@@ -69,7 +70,7 @@ class ContactController {
                 notas: notas?.trim(),
                 categoria: categoria?.trim()
             };
-    
+            console.log('Datos enviados al backend:', contactData);
             const changes = await Contact.update(req.params.id, contactData, req.user.id);
             if (changes === 0) {
                 return res.status(404).json({ error: 'Contacto no encontrado' });

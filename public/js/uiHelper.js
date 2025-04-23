@@ -56,6 +56,27 @@ function renderContacts(contacts) {
         tableBody.appendChild(row);
     });
 }
+// Función para eliminar un contacto
+async function deleteContact(contactId) {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch(`/contacts/${contactId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            showFeedback('Contacto eliminado correctamente');
+            loadContacts(); // Recargar la lista de contactos
+        } else {
+            const error = await response.json();
+            showFeedback(error.error || 'Error al eliminar contacto', false);
+        }
+    } catch (err) {
+        console.error('Error al eliminar contacto:', err);
+        showFeedback(`Error de conexión: ${err.message}`, false);
+    }
+}
 
 // Función para alternar el modo de edición
 function toggleEditMode(row, contactId) {
@@ -98,6 +119,7 @@ function toggleEditMode(row, contactId) {
 
 // Función para guardar los cambios en el contacto después de editar
 async function saveEdits(contactId) {
+    //console.log('Iniciando actualización del contacto con ID:', contactId);
     const updatedContact = {
         nombre: document.querySelector('#editNombre').value,
         telefono: document.querySelector('#editTelefono').value,
@@ -105,6 +127,7 @@ async function saveEdits(contactId) {
         notas: document.querySelector('#editNotas').value,
         categoria: document.querySelector('#editCategoria').value,
     };
+    //console.log('Datos del contacto actualizados:', updatedContact);
 
     const token = localStorage.getItem('token');
     try {
@@ -118,6 +141,7 @@ async function saveEdits(contactId) {
         });
 
         if (response.ok) {
+            //console.log('Contacto actualizado correctamente');
             showFeedback('Contacto actualizado correctamente');
             loadContacts(); // Recargar la lista de contactos
             document.querySelector('#editForm').style.display = 'none'; // Ocultar el formulario de edición

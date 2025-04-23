@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'tu_secreto_aqui',
+    secret: process.env.JWT_SECRET || JWT_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {

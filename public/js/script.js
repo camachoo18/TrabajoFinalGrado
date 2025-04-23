@@ -97,7 +97,7 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     const contact = { nombre, telefono, email, notas, categoria: nuevaCategoria };
 
     // Enviar el contacto al backend
-    const response = await fetch('/add', {
+    const response = await fetch('/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contact),

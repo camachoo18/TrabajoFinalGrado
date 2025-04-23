@@ -6,7 +6,7 @@ async function checkAuth() {
             return false;
         }
 
-        const response = await fetch('http://localhost:3000/auth/isAuthenticated', {
+        const response = await fetch('auth/isAuthenticated', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -36,7 +36,7 @@ async function handleLogin(event) {
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const response = await fetch('http://localhost:3000/auth/login', {
+        const response = await fetch('auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -65,7 +65,7 @@ async function handleRegister(event) {
     const password = document.getElementById('registerPassword').value
 
     try {
-        const response = await fetch('http://localhost:3000/auth/register', {
+        const response = await fetch('/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -92,7 +92,7 @@ async function handleLogout() {
     try {
         const token = localStorage.getItem('token');
         if (token) {
-            await fetch('http://localhost:3000/auth/logout', {
+            await fetch('/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
