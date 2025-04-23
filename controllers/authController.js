@@ -49,14 +49,12 @@ class AuthController {
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
-                maxAge: 6 * 60 * 60 * 1000 // 6 horas
-                
+                sameSite: 'strict',
+                maxAge: 6 * 60 * 60 * 1000, // 6 horas
+                path: '/' // Hacer que la cookie sea accesible en todas las rutas
             });
-            //console.log('Token generado:', token);
             
-            res.json({ message: 'Inicio de sesión exitoso', token });
-
-           // res.json({ token });
+            res.json({ message: 'Inicio de sesión exitoso' });
         } catch (error) {
             console.error('Error en el login:', error);
             res.status(500).json({ error: 'Error en el proceso de autenticación' });
@@ -91,45 +89,23 @@ class AuthController {
         }
     }
 
-    // Verificar si el usuario está autenticado
-    static async checkAuth(req, res) {
-        try {
-            const token = req.headers.authorization?.split(' ')[1];
-            if (!token) {
-                return res.status(401).json({ authenticated: false });
-            }
-
-            // Verificar el token JWT
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            const user = await User.findById(decoded.id);
-            if (!user) {
-                return res.status(401).json({ authenticated: false });
-            }
-
-            res.json({
-                authenticated: true,
-                user: {
-                    id: user.id,
-                    username: user.username
-                }
-            });
-        } catch (error) {
-            console.error('Error al verificar autenticación:', error);
-            res.status(401).json({ authenticated: false });
-        }
-    }
-
     // Manejar el cierre de sesión
     static async logout(req, res) {
         try {
-            res.clearCookie('token'); // Eliminar la cookie del token
-            res.json({ message: 'Sesión cerrada correctamente' });
+            console.log('Cerrando sesión para el usuario:', req.user); // Depuración
+            res.clearCookie('token', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/' // Asegurarse de que coincida con el path de la cookie
+            });
+            console.log('Cookie eliminada correctamente'); // Depuración
+            res.json({ message: 'Sesión cerrada exitosamente' });
         } catch (error) {
-            console.error('Error al cerrar sesión:', error);
+            console.error('Error en el logout:', error);
             res.status(500).json({ error: 'Error al cerrar sesión' });
         }
     }
 }
-
 
 module.exports = AuthController;

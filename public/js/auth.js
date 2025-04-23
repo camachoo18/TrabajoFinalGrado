@@ -1,20 +1,12 @@
 // Función para verificar el estado de autenticación
 async function checkAuth() {
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            return false;
-        }
-
         const response = await fetch('auth/isAuthenticated', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            credentials: 'include'
         });
 
         if (!response.ok) {
             if (response.status === 401) {
-                localStorage.removeItem('token');
                 return false;
             }
             throw new Error('Error al verificar autenticación');
@@ -24,7 +16,6 @@ async function checkAuth() {
         return data.authenticated;
     } catch (error) {
         console.error('Error al verificar autenticación:', error);
-        localStorage.removeItem('token');
         return false;
     }
 }
@@ -39,6 +30,7 @@ async function handleLogin(event) {
         const response = await fetch('/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ username, password })
         });
 
@@ -89,19 +81,22 @@ async function handleRegister(event) {
 // Función para manejar el logout
 async function handleLogout() {
     try {
-        const token = localStorage.getItem('token');
-        if (token) {
-            await fetch('/auth/logout', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+        console.log('Enviando solicitud de logout al servidor...');
+        const response = await fetch('/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        console.log('Respuesta del servidor:', response); // Depuración
+
+        if (!response.ok) {
+            throw new Error('Error al cerrar sesión');
         }
-        localStorage.removeItem('token');
-        window.location.href = '/home.html';
+
+        window.location.href = '/html/login.html';
+        window.location.reload(); // Recargar la página para asegurarse de que se borren los datos del usuario
     } catch (error) {
-        console.error('Error en el logout:', error);
-        localStorage.removeItem('token');
-        window.location.href = '/home.html';
+        console.error('Error al cerrar sesión:', error);
+        showFeedback('Error al cerrar sesión', false);
     }
 }
 

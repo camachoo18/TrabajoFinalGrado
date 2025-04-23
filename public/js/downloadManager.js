@@ -46,3 +46,28 @@ function downloadCSV(csvContent, filename) {
         document.body.removeChild(link);
     }
 }
+
+async function downloadContacts(format) {
+    try {
+        const response = await fetch(`/contacts/download/${format}`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al descargar contactos');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `contactos.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al descargar contactos', false);
+    }
+}

@@ -9,55 +9,80 @@ function showFeedback(message, success = true) {
 
 async function loadCategories() {
     try {
-        const token = localStorage.getItem('token');
         const response = await fetch('/categories', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include'
         });
-
-        if (response.ok) {
-            const categories = await response.json();
-            //console.log('Categorías recibidas:', categories); // Depuración
-            const categorySelect = document.getElementById('categoria');
-            const filterSelect = document.getElementById('filtroCategoria');
-
-            // Limpiar las opciones existentes
-            if (categorySelect) {
-                categorySelect.innerHTML = '<option value="">Seleccionar categoría</option>';
-            }
-            if (filterSelect) {
-                filterSelect.innerHTML = '<option value="">Todas las categorías</option>';
-            }
-
-            // Agregar categorías dinámicas desde el servidor
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.nombre;
-                option.textContent = category.nombre;
-
-                if (categorySelect) {
-                    categorySelect.appendChild(option);
-                }
-                if (filterSelect) {
-                    const filterOption = document.createElement('option');
-                    filterOption.value = category.nombre;
-                    filterOption.textContent = category.nombre;
-                    filterSelect.appendChild(filterOption);
-                }
-            });
-
-            // Añadir opción "Otra" al formulario de agregar contacto
-            if (categorySelect) {
-                const otherOption = document.createElement('option');
-                otherOption.value = 'Otra';
-                otherOption.textContent = 'Otra';
-                categorySelect.appendChild(otherOption);
-            }
-        } else {
-            showFeedback('Error al cargar categorías', false);
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar categorías');
         }
-    } catch (err) {
-        console.error('Error al cargar categorías:', err); // Depuración
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        
+        const categories = await response.json();
+        loadCategories(categories);
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al cargar categorías', false);
+    }
+}
+
+async function addCategory(categoryData) {
+    try {
+        const response = await fetch('/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(categoryData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al agregar categoría');
+        }
+        
+        await loadCategories();
+        showFeedback('Categoría agregada exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al agregar categoría', false);
+    }
+}
+
+async function updateCategory(id, categoryData) {
+    try {
+        const response = await fetch(`/categories/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(categoryData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al actualizar categoría');
+        }
+        
+        await loadCategories();
+        showFeedback('Categoría actualizada exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al actualizar categoría', false);
+    }
+}
+
+async function deleteCategory(id) {
+    try {
+        const response = await fetch(`/categories/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al eliminar categoría');
+        }
+        
+        await loadCategories();
+        showFeedback('Categoría eliminada exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al eliminar categoría', false);
     }
 }
 

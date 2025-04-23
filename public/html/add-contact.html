@@ -69,5 +69,29 @@
     <script src="/js/categoryManager.js"></script> <!-- Para cargar categorías -->
     <script src="/js/contactManager.js"></script> <!-- Para CRUD -->
     <script src="/js/filterManager.js"></script>
+    <script>
+        async function addContact(contactData) {
+            try {
+                const response = await fetch('/contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(contactData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error al agregar contacto');
+                }
+                
+                showFeedback('Contacto agregado exitosamente');
+                setTimeout(() => {
+                    window.location.href = '/html/view-contacts.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Error:', error);
+                showFeedback('Error al agregar contacto', false);
+            }
+        }
+    </script>
 </body>
 </html>

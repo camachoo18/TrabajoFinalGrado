@@ -162,3 +162,62 @@ function showFeedback(message, success = true) {
     document.body.appendChild(feedback);
     setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
 }
+
+async function checkSession() {
+    try {
+        const response = await fetch('/auth/isAuthenticated', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            window.location.href = '/html/login.html';
+            return;
+        }
+        
+        const data = await response.json();
+        if (!data.authenticated) {
+            window.location.href = '/html/login.html';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        window.location.href = '/html/login.html';
+    }
+}
+
+async function loadUserData() {
+    try {
+        const response = await fetch('/auth/user', {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar datos del usuario');
+        }
+        
+        const userData = await response.json();
+        displayUserData(userData);
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al cargar datos del usuario', false);
+    }
+}
+
+async function updateUserData(userData) {
+    try {
+        const response = await fetch('/auth/user', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(userData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al actualizar datos del usuario');
+        }
+        
+        showFeedback('Datos actualizados exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al actualizar datos del usuario', false);
+    }
+}

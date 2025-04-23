@@ -31,20 +31,19 @@ document.getElementById('searchInput')?.addEventListener('input', (e) => {
 // Función para cargar todos los contactos
 async function loadContacts() {
     try {
-        const token = localStorage.getItem('token');
         const response = await fetch('/contacts', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include'
         });
-
-        if (response.ok) {
-            const contacts = await response.json();
-            renderContacts(contacts); // Renderizar todos los contactos
-        } else {
-            showFeedback('Error al cargar contactos', false);
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar contactos');
         }
-    } catch (err) {
-        console.error('Error al cargar contactos:', err);
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        
+        const contacts = await response.json();
+        renderContacts(contacts);
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al cargar contactos', false);
     }
 }
 
@@ -124,13 +123,10 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     const contact = { nombre, telefono, email, notas, categoria: finalCategoria };
 
     try {
-        const token = localStorage.getItem('token');
         const response = await fetch('/contacts', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(contact)
         });
 
@@ -174,10 +170,8 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     try {
         const response = await fetch(`/contacts/${id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify(contact)
         });
 
@@ -232,3 +226,64 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('No se encontró el elemento #contactsTableBody. Esta página no requiere cargar contactos.');
     }
 });
+
+async function addContact(contactData) {
+    try {
+        const response = await fetch('/contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(contactData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al agregar contacto');
+        }
+        
+        await loadContacts();
+        showFeedback('Contacto agregado exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al agregar contacto', false);
+    }
+}
+
+async function updateContact(id, contactData) {
+    try {
+        const response = await fetch(`/contacts/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(contactData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al actualizar contacto');
+        }
+        
+        await loadContacts();
+        showFeedback('Contacto actualizado exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al actualizar contacto', false);
+    }
+}
+
+async function deleteContact(id) {
+    try {
+        const response = await fetch(`/contacts/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al eliminar contacto');
+        }
+        
+        await loadContacts();
+        showFeedback('Contacto eliminado exitosamente');
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al eliminar contacto', false);
+    }
+}

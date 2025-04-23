@@ -45,20 +45,34 @@
             100% { transform: rotate(360deg); }
         }
     </style>
-    <script>
-        // Ejecutar la función de cerrar sesión al cargar la página
-        window.onload = function() {
-            // Eliminar el token de autenticación
-            localStorage.removeItem('token');
-
-            // Muestra el mensaje de feedback
+<script>
+    window.onload = async function() {
+        try {
+            console.log('Enviando solicitud de logout al servidor...'); // Depuración
+            const response = await fetch('/auth/logout', {
+                method: 'POST',
+                credentials: 'include' // Incluir cookies en la solicitud
+            });
+    
+            console.log('Respuesta del servidor:', response); // Depuración
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error en la respuesta del servidor:', errorData); // Depuración
+                throw new Error(errorData.error || 'Error al cerrar sesión');
+            }
+    
+            console.log('Sesión cerrada exitosamente'); // Depuración
             document.getElementById('feedback-message').innerText = "Sesión cerrada exitosamente. Redirigiendo...";
-            
-            // Redirige después de un pequeño delay (para mostrar el feedback)
+    
             setTimeout(function() {
-                window.location.href = '/html/login.html'; // Cambia 'login.html' por tu página de inicio de sesión
-            }, 2000); // 2 segundos de espera para mostrar el feedback
+                window.location.href = '/html/login.html';
+            }, 2000);
+        } catch (error) {
+            console.error('Error al cerrar sesión:', error);
+            document.getElementById('feedback-message').innerText = "Error al cerrar sesión. Inténtalo nuevamente.";
         }
+    };
     </script>
 </head>
 <body>

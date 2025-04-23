@@ -43,3 +43,24 @@ document.getElementById('filtroCategoria')?.addEventListener('change', (e) => {
     const categoria = e.target.value;
     filterContactsByCategory(categoria);
 });
+
+async function applyFilters(filters) {
+    try {
+        const response = await fetch('/contacts/filter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(filters)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al aplicar filtros');
+        }
+        
+        const contacts = await response.json();
+        displayContacts(contacts);
+    } catch (error) {
+        console.error('Error:', error);
+        showFeedback('Error al aplicar filtros', false);
+    }
+}
