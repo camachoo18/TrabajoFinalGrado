@@ -4,6 +4,25 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 class AuthController {
+    static async checkAuth(req, res) {
+        try {
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(401).json({ authenticated: false });
+            }
+    
+            res.json({
+                authenticated: true,
+                user: {
+                    id: user.id,
+                    username: user.username
+                }
+            });
+        } catch (error) {
+            console.error('Error al verificar autenticación:', error);
+            res.status(401).json({ authenticated: false });
+        }
+    }
     // Manejar el inicio de sesión
     static async login(req, res) {
         try {

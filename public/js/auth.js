@@ -36,11 +36,9 @@ async function handleLogin(event) {
     const password = document.getElementById('loginPassword').value;
 
     try {
-        const response = await fetch('auth/login', {
+        const response = await fetch('/auth/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
 
@@ -50,6 +48,7 @@ async function handleLogin(event) {
         }
 
         const data = await response.json();
+        
         localStorage.setItem('token', data.token);
         window.location.href = '/index.html';
     } catch (error) {
@@ -94,17 +93,15 @@ async function handleLogout() {
         if (token) {
             await fetch('/auth/logout', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
         }
         localStorage.removeItem('token');
-        window.location.href = '/login.html';
+        window.location.href = '/home.html';
     } catch (error) {
         console.error('Error en el logout:', error);
         localStorage.removeItem('token');
-        window.location.href = '/login.html';
+        window.location.href = '/home.html';
     }
 }
 

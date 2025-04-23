@@ -45,7 +45,7 @@ app.use('/google', authenticateToken, googleRoutes);
 
 // Rutas para servir archivos HTML
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html', 'home.html'));
 });
 
 app.get('/login.html', (req, res) => {
@@ -54,6 +54,10 @@ app.get('/login.html', (req, res) => {
 
 app.get('/register.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
+});
+
+app.get('/home.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'html', 'home.html'));
 });
 
 app.get('/index.html', (req, res) => {

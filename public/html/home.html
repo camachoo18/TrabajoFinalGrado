@@ -28,6 +28,25 @@
         }
     </style>
 </head>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const response = await fetch('/auth/isAuthenticated', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    // Si el usuario está autenticado, redirigir a index.html
+                    window.location.href = '/index.html';
+                }
+            } catch (err) {
+                console.error('Error al verificar autenticación:', err);
+            }
+        }
+    });
+</script>
 <body>
     <div class="container">
         <h1>Bienvenido a la Agenda de Contactos</h1>
