@@ -48,9 +48,9 @@ async function handleLogin(event) {
         }
 
         const data = await response.json();
-        
-        localStorage.setItem('token', data.token);
-        window.location.href = '/index.html';
+        //console.log('Token recibido:', data.token); // Depuración
+        localStorage.setItem('token', data.token); // Guardar el token en localStorage
+        window.location.href = '/index.html'; // Redirigir a index.html
     } catch (error) {
         console.error('Error en el login:', error);
         alert(error.message);

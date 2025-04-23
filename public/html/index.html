@@ -25,28 +25,10 @@
     <!-- Scripts -->
     
     <script src="/js/auth.js"></script>
+    
     <script>
 // Verificar si el usuario está autenticado al cargar la página
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const response = await fetch('/auth/isAuthenticated', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                // El usuario no está autenticado, redirigir a la página de inicio
-                window.location.href = '/home.html';
-            }
-        } else {
-            // No hay token, redirigir a la página de inicio
-            window.location.href = '/home.html';
-        }
-    } catch (err) {
-        console.error('Error al verificar autenticación:', err);
-        window.location.href = '/home.html';
-    }
-});
+
 
         // Redirigir a logout.html al hacer clic en el botón de cerrar sesión
         document.getElementById('logoutButton').addEventListener('click', () => {

@@ -40,14 +40,23 @@ class AuthController {
                 return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
             }
 
-            // Generar el token JWT
             const token = jwt.sign(
                 { id: user.id, username: user.username },
                 process.env.JWT_SECRET,
                 { expiresIn: '6h' }
             );
+            
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 6 * 60 * 60 * 1000 // 6 horas
+                
+            });
+            //console.log('Token generado:', token);
+            
+            res.json({ message: 'Inicio de sesión exitoso', token });
 
-            res.json({ token });
+           // res.json({ token });
         } catch (error) {
             console.error('Error en el login:', error);
             res.status(500).json({ error: 'Error en el proceso de autenticación' });
@@ -113,7 +122,7 @@ class AuthController {
     // Manejar el cierre de sesión
     static async logout(req, res) {
         try {
-            // Aquí puedes limpiar la sesión o realizar otras acciones necesarias
+            res.clearCookie('token'); // Eliminar la cookie del token
             res.json({ message: 'Sesión cerrada correctamente' });
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
@@ -121,5 +130,6 @@ class AuthController {
         }
     }
 }
+
 
 module.exports = AuthController;

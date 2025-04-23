@@ -16,7 +16,7 @@ const validateContact = (req, res, next) => {
     if (!categoria || typeof categoria !== 'string' || categoria.trim() === '') {
         return res.status(400).json({ error: 'La categoría es requerida y debe ser una cadena de texto válida' });
     }
-    console.log('Valor de categoría recibido:', categoria);
+    //console.log('Valor de categoría recibido:', categoria);
     //console.log('Middleware validateContact: Cuerpo recibido:', req.body);
 
     next();
