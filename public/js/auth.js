@@ -1,19 +1,16 @@
 // Función para verificar el estado de autenticación
 async function checkAuth() {
     try {
-        const response = await fetch('auth/isAuthenticated', {
-            credentials: 'include'
+        const response = await fetch('/auth/isAuthenticated', {
+            credentials: 'include' // Incluir cookies en la solicitud
         });
 
         if (!response.ok) {
-            if (response.status === 401) {
-                return false;
-            }
-            throw new Error('Error al verificar autenticación');
+            return false; // Usuario no autenticado
         }
 
         const data = await response.json();
-        return data.authenticated;
+        return data.authenticated; // Retorna true si el usuario está autenticado
     } catch (error) {
         console.error('Error al verificar autenticación:', error);
         return false;
@@ -40,8 +37,8 @@ async function handleLogin(event) {
         }
 
         const data = await response.json();
-        //console.log('Token recibido:', data.token); // Depuración
-        localStorage.setItem('token', data.token); // Guardar el token en localStorage
+        
+        
         window.location.href = '/index.html'; // Redirigir a index.html
     } catch (error) {
         console.error('Error en el login:', error);
@@ -70,7 +67,7 @@ async function handleRegister(event) {
         }
 
         const data = await response.json();
-        localStorage.setItem('token', data.token);
+        
         window.location.href = '/index.html';
     } catch (error) {
         console.error('Error en el registro:', error);
@@ -92,7 +89,7 @@ async function handleLogout() {
             throw new Error('Error al cerrar sesión');
         }
 
-        window.location.href = '/html/login.html';
+        window.location.href = '/html/home.html';
         window.location.reload(); // Recargar la página para asegurarse de que se borren los datos del usuario
     } catch (error) {
         console.error('Error al cerrar sesión:', error);
@@ -119,10 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Verificar autenticación al cargar la página
-    if (window.location.pathname !== '/login.html' && window.location.pathname !== '/register.html') {
+    if (window.location.pathname === '/html/index.html') {
         checkAuth().then(authenticated => {
             if (!authenticated) {
-                window.location.href = '/login.html';
+                window.location.href = '/html/home.html'; // Redirigir a home.html si no está autenticado
             }
         });
     }

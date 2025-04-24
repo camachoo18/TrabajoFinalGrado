@@ -58,11 +58,10 @@ function renderContacts(contacts) {
 }
 // Función para eliminar un contacto
 async function deleteContact(contactId) {
-    const token = localStorage.getItem('token');
     try {
         const response = await fetch(`/contacts/${contactId}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include' // Incluir cookies en la solicitud
         });
 
         if (response.ok) {
@@ -80,11 +79,15 @@ async function deleteContact(contactId) {
 
 // Función para alternar el modo de edición
 function toggleEditMode(row, contactId) {
-    const token = localStorage.getItem('token');
     fetch(`/contacts/${contactId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include' // Incluir cookies en la solicitud
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener el contacto');
+            }
+            return response.json();
+        })
         .then(contact => {
             if (!contact) {
                 console.error('Contacto no encontrado');
@@ -104,7 +107,6 @@ function toggleEditMode(row, contactId) {
             editForm.style.display = 'block';
 
             // Desplazar la página para que el formulario sea visible
-            console.log('Desplazando hacia el formulario de edición...');
             editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             // Guardar los cambios
@@ -129,7 +131,7 @@ async function saveEdits(contactId) {
     };
     //console.log('Datos del contacto actualizados:', updatedContact);
 
-    const token = localStorage.getItem('token');
+    
     try {
         const response = await fetch(`/contacts/${contactId}`, { // para editar el contacto y guardarlo
             method: 'PUT',
@@ -150,7 +152,7 @@ async function saveEdits(contactId) {
             showFeedback(error.error || 'Error al actualizar contacto', false);
         }
     } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        //showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 

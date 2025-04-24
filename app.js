@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
+const jwt = require('jsonwebtoken');
 const contactRoutes = require('./routes/contactRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const googleRoutes = require('./routes/googleRoutes');
@@ -30,6 +31,22 @@ app.use('/google', authenticateToken, googleRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas para servir archivos HTML
+app.get('/', (req, res) => {
+    const token = req.cookies?.token;
+
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            // Si el token es válido, redirigir a index.html
+            return res.redirect('/html/index.html');
+        } catch (error) {
+            console.error('Token inválido o expirado:', error);
+        }
+    }
+
+    // Si no hay token o es inválido, redirigir a home.html
+    res.redirect('/html/home.html');
+});
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'html', 'login.html'));
 });

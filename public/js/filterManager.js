@@ -1,8 +1,6 @@
 // Función para filtrar contactos por categoría
 async function filterContactsByCategory(categoria) {
     try {
-        const token = localStorage.getItem('token');
-
         // Validar la categoría
         if (!categoria || categoria === 'Todas') {
             await loadContacts(); // Cargar todos los contactos si la categoría es "Todas"
@@ -13,7 +11,7 @@ async function filterContactsByCategory(categoria) {
 
         const url = `/contacts/category/${encodeURIComponent(categoria)}`;
         const response = await fetch(url, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include' // Incluir cookies en la solicitud
         });
 
         if (response.ok) {

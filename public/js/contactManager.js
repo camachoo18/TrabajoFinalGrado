@@ -1,9 +1,8 @@
 // Función para buscar contactos dinámicamente
 async function searchContacts(query) {
     try {
-        const token = localStorage.getItem('token');
         const response = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include' // Incluir cookies en la solicitud
         });
 
         if (response.ok) {
@@ -160,12 +159,6 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     // Crear el objeto del contacto
     const contact = { nombre, telefono, email, notas, categoria: finalCategoria };
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        showFeedback('No se proporcionó un token. Por favor, inicia sesión nuevamente.', false);
-        window.location.href = '/html/login.html'; // Redirigir al inicio de sesión
-        return;
-    }
 
     try {
         const response = await fetch(`/contacts/${id}`, {
@@ -192,7 +185,7 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
             }
         } else if (response.status === 401) {
             showFeedback('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', false);
-            localStorage.removeItem('token'); // Eliminar el token expirado
+            //localStorage.removeItem('token'); // Eliminar el token expirado
             window.location.href = '/html/login.html'; // Redirigir al inicio de sesión
         } else {
             const responseBody = await response.json();
@@ -200,7 +193,7 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
         }
     } catch (err) {
         console.error('Error al actualizar contacto:', err);
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        //showFeedback(`Error de conexión: ${err.message}`, false); // Mostrar mensaje de error de token is not defined
     }
 });
 

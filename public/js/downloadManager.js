@@ -1,10 +1,10 @@
 // Función para descargar contactos en formato CSV
 document.getElementById('downloadCsvButton')?.addEventListener('click', async () => {
     try {
-        const token = localStorage.getItem('token');
         const response = await fetch('/contacts', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            credentials: 'include' // Incluir cookies en la solicitud
         });
+
         if (response.ok) {
             const contacts = await response.json();
             const csvContent = convertToCSV(contacts);
