@@ -59,8 +59,8 @@ function renderContacts(contacts) {
 
 // Función para eliminar un contacto
 async function deleteContact(contactId) {
-    const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este contacto?');
-    if (!confirmDelete) return;
+   // const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este contacto?');
+    //if (!confirmDelete) return;
 
     try {
         const response = await fetch(`/contacts/${contactId}`, {

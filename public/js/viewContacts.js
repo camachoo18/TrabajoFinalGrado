@@ -24,20 +24,57 @@ async function loadContacts() {
     }
 }
 
+// Función para eliminar un contacto
+async function deleteContact(contactId) {
+   // const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este contacto?');
+    //if (!confirmDelete) return;
+
+    try {
+        const response = await fetch(`/contacts/${contactId}`, {
+            method: 'DELETE',
+            credentials: 'include' // Incluir cookies en la solicitud
+        });
+
+        if (response.ok) {
+            // Eliminar la fila correspondiente de la tabla
+            const row = document.querySelector(`tr[data-id="${contactId}"]`);
+            if (row) {
+                row.remove(); // Eliminar la fila del DOM
+            }
+
+            showFeedback('Contacto eliminado correctamente');
+        } else {
+            const error = await response.json();
+            showFeedback(error.error || 'Error al eliminar contacto', false);
+        }
+    } catch (err) {
+        console.error('Error al eliminar contacto:', err);
+        showFeedback(`Error de conexión: ${err.message}`, false);
+    }
+}
+
 // Función para mostrar contactos en la tabla
 function displayContacts(contacts) {
     const tableBody = document.getElementById('contactsTableBody');
 
-    // Crear un conjunto con los IDs de los contactos ya presentes en la tabla
-    const existingContactIds = new Set(
-        Array.from(tableBody.querySelectorAll('tr')).map(row => row.dataset.id)
-    );
+    // Limpiar la tabla antes de añadir nuevos contactos
+    tableBody.innerHTML = '';
+
+    // Crear conjuntos para rastrear los números de teléfono y nombres ya presentes
+    const existingPhoneNumbers = new Set();
+    const existingNames = new Set();
 
     contacts.forEach(contact => {
-        // Evitar duplicados: solo añadir contactos que no estén ya en la tabla
-        if (!existingContactIds.has(String(contact.id))) {
+        // Normalizar el número de teléfono y el nombre
+        const normalizedPhone = contact.telefono?.replace(/\D/g, '') || ''; // Eliminar caracteres no numéricos
+        const normalizedName = contact.nombre?.trim().toLowerCase() || ''; // Normalizar el nombre (sin espacios y en minúsculas)
+
+        // Evitar duplicados: solo añadir contactos cuyo teléfono o nombre no estén ya en los conjuntos
+        if (!existingPhoneNumbers.has(normalizedPhone) && !existingNames.has(normalizedName)) {
             const row = document.createElement('tr');
             row.dataset.id = contact.id; // Guardar el ID en el atributo `data-id`
+            row.dataset.phone = normalizedPhone; // Guardar el teléfono normalizado en el atributo `data-phone`
+            row.dataset.name = normalizedName; // Guardar el nombre normalizado en el atributo `data-name`
 
             row.innerHTML = `
                 <td>${contact.nombre || 'Sin Nombre'}</td>
@@ -51,6 +88,12 @@ function displayContacts(contacts) {
                 </td>
             `;
             tableBody.appendChild(row); // Añadir la nueva fila a la tabla
+
+            // Añadir el teléfono y el nombre normalizados a los conjuntos para evitar duplicados
+            existingPhoneNumbers.add(normalizedPhone);
+            existingNames.add(normalizedName);
+        } else {
+            console.log(`Contacto duplicado ignorado: ${contact.nombre} (${contact.telefono})`);
         }
     });
 }

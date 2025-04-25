@@ -1,9 +1,10 @@
 const { google } = require('googleapis');
 const googleAuth = require('../services/googleAuth');
 const Contact = require('../models/Contact');
+const db = require('../db/database'); // Asegúrate de que esta referencia sea correcta
 
 class GoogleController {
-
+    // Verificar el estado de autenticación
     async checkAuthStatus(req, res) {
         try {
             const tokens = req.session.googleTokens;
@@ -16,6 +17,8 @@ class GoogleController {
             res.status(500).json({ error: 'Error al verificar el estado de autenticación' });
         }
     }
+
+    // Obtener la URL de autenticación de Google
     async getAuthUrl(req, res) {
         try {
             const authUrl = googleAuth.getAuthUrl();
@@ -24,65 +27,100 @@ class GoogleController {
             res.status(500).json({ error: 'Error al obtener URL de autenticación' });
         }
     }
+
+    // Manejar el callback de Google después de la autenticación
     async handleCallback(req, res) {
         try {
             const { code } = req.query;
             console.log('Código de autorización recibido:', code);
-    
+
             const { tokens } = await googleAuth.getOAuth2Client().getToken(code);
             console.log('Tokens obtenidos:', tokens);
-    
+
             req.session.googleTokens = tokens; // Guardar tokens en la sesión
             console.log('Tokens guardados en la sesión:', req.session.googleTokens);
-    
-            res.redirect('/html/view-contacts.html');
+
+            res.redirect('/html/view-contacts.html?auth=success&import=true');
         } catch (error) {
             console.error('Error en el callback de Google:', error);
-            res.status(500).json({ error: 'Error en la autenticación con Google' });
+            res.redirect('/html/view-contacts.html?auth=error');
         }
     }
 
+    // Importar contactos desde Google
     async importContacts(req, res) {
         try {
             console.log('Iniciando importación de contactos desde Google...');
             const oauth2Client = googleAuth.getOAuth2Client();
             oauth2Client.setCredentials(req.session.googleTokens);
-    
-            console.log('Tokens configurados en oAuth2Client:', req.session.googleTokens);
-    
+
             const people = google.people({ version: 'v1', auth: oauth2Client });
             const response = await people.people.connections.list({
                 resourceName: 'people/me',
                 personFields: 'names,emailAddresses,phoneNumbers',
             });
-    
-            console.log('Respuesta de Google API:', response.data);
-    
+
             const contacts = response.data.connections || [];
-            console.log('Contactos obtenidos:', contacts);
-    
+            console.log('Contactos obtenidos desde Google:', contacts);
+
+            const userId = req.user.id; // ID del usuario autenticado
+
+            // Preparar las consultas SQL
+            const checkDuplicateQuery = 'SELECT COUNT(*) AS count FROM contacts WHERE telefono = ? AND user_id = ?';
+            const insertContactQuery = `
+                INSERT INTO contacts (nombre, email, telefono, user_id)
+                VALUES (?, ?, ?, ?)
+            `;
+
+            const stmtCheckDuplicate = db.prepare(checkDuplicateQuery);
+            const stmtInsertContact = db.prepare(insertContactQuery);
+
             const importedContacts = [];
-    
+
             for (const contact of contacts) {
-                const newContact = {
-                    nombre: contact.names?.[0]?.displayName || '',
-                    email: contact.emailAddresses?.[0]?.value || '',
-                    telefono: contact.phoneNumbers?.[0]?.value || '',
-                    user_id: req.user.id,
-                };
-    
-                console.log('Procesando contacto:', newContact);
-    
-                if (newContact.nombre || newContact.email || newContact.telefono) {
-                    const savedContactId = await Contact.create(newContact);
-                    importedContacts.push({ id: savedContactId, ...newContact });
+                try {
+                    const nombre = contact.names?.[0]?.displayName || 'Sin Nombre';
+                    const email = contact.emailAddresses?.[0]?.value || '';
+                    const telefono = contact.phoneNumbers?.[0]?.value?.replace(/\D/g, '') || ''; // Normalizar el número de teléfono
+
+                    if (!telefono) {
+                        console.log(`El contacto "${nombre}" no tiene número de teléfono. No se verificará duplicado.`);
+                        continue; // Omitir contactos sin número de teléfono
+                    }
+
+                    // Verificar si el contacto ya existe por número de teléfono
+                    const row = await new Promise((resolve, reject) => {
+                        stmtCheckDuplicate.get([telefono, userId], (err, row) => {
+                            if (err) reject(err);
+                            else resolve(row);
+                        });
+                    });
+
+                    if (row.count === 0) {
+                        // Si no existe, insertar el contacto
+                        await new Promise((resolve, reject) => {
+                            stmtInsertContact.run([nombre, email, telefono, userId], function (err) {
+                                if (err) reject(err);
+                                else {
+                                    console.log(`Contacto "${nombre}" insertado con éxito.`);
+                                    importedContacts.push({ id: this.lastID, nombre, email, telefono });
+                                    resolve();
+                                }
+                            });
+                        });
+                    } else {
+                        console.log(`El contacto con teléfono ${telefono} ya existe. No se insertará.`);
+                    }
+                } catch (err) {
+                    console.error('Error al procesar contacto:', err);
                 }
             }
-    
-            console.log('Contactos importados al frontend:', importedContacts);
-    
+
+            stmtCheckDuplicate.finalize();
+            stmtInsertContact.finalize();
+
             res.json({
-                message: 'Contactos importados correctamente',
+                message: 'Importación de contactos completada',
                 contacts: importedContacts,
             });
         } catch (error) {
@@ -92,4 +130,4 @@ class GoogleController {
     }
 }
 
-module.exports = new GoogleController(); 
+module.exports = new GoogleController();
