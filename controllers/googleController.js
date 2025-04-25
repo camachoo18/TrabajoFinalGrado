@@ -2,6 +2,19 @@ const googleAuth = require('../services/googleAuth');
 const Contact = require('../models/Contact');
 
 class GoogleController {
+
+    async checkAuthStatus(req, res) {
+        try {
+            const tokens = req.session.googleTokens;
+            if (tokens && tokens.access_token) {
+                res.json({ authenticated: true });
+            } else {
+                res.json({ authenticated: false });
+            }
+        } catch (error) {
+            res.status(500).json({ error: 'Error al verificar el estado de autenticación' });
+        }
+    }
     async getAuthUrl(req, res) {
         try {
             const authUrl = googleAuth.getAuthUrl();

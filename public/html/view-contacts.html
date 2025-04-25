@@ -69,52 +69,13 @@
         </div>
     </div>
     <script>
-        // Verificar si el usuario está autenticado al cargar la página
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (token) {
-                    const response = await fetch('/auth/isAuthenticated', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (!response.ok) {
-                        // El usuario no está autenticado, redirigir a la página de inicio
-                        window.location.href = '/';
-                    }
-                } else {
-                    // No hay token, redirigir a la página de inicio
-                    window.location.href = '/';
-                }
-            } catch (err) {
-                console.error('Error al verificar autenticación:', err);
-                window.location.href = '/';
-            }
-        });
+
 
         // Redirigir a logout.html al hacer clic en el botón de cerrar sesión
         document.getElementById('logoutButton').addEventListener('click', () => {
             window.location.href = '/html/logout.html';
         });
 
-        // Manejar la importación de contactos de Google
-        document.getElementById('importGoogleContacts').addEventListener('click', async () => {
-            try {
-                const response = await fetch('/import-google-contacts', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-                });
-                if (response.ok) {
-                    //alert('Contactos importados correctamente');
-                    // Recargar la lista de contactos o realizar alguna acción adicional
-                } else if (response.status === 401) {
-                    // Si no está autenticado con Google, redirigir al flujo de autenticación
-                    window.location.href = '/auth/google';
-                } else {
-                    alert('Error al importar contactos');
-                }
-            } catch (err) {
-                console.error('Error al importar contactos:', err);
-            }
-        });
 
         async function loadContacts() {
             try {
@@ -136,11 +97,11 @@
     </script>
 
     <!-- Cargar los archivos JavaScript -->
-    <script src="/js/categoryManager.js"></script> <!-- Para cargar categorías -->
-    <script src="/js/contactManager.js"></script> <!-- Para CRUD -->
-    <script src="/js/viewContacts.js"></script> <!-- Para cargar los contactos -->
-    <script src="/js/filterManager.js"></script> <!-- Para búsqueda -->
-    <script src="/js/uiHelper.js"></script> <!-- Para feedback -->
-    <script src="/js/downloadManager.js"></script> <!-- Para descargar contactos en CSV -->
+    <script src="/js/categoryManager.js" defer></script> <!-- Para cargar categorías -->
+    <script src="/js/contactManager.js" defer></script> <!-- Para CRUD -->
+    <script src="/js/filterManager.js" defer></script> <!-- Para búsqueda -->
+    <script src="/js/uiHelper.js" defer></script> <!-- Para feedback y renderizado -->
+    <script src="/js/viewContacts.js" defer></script> <!-- Manejo específico de la vista de contactos -->
+    <script src="/js/downloadManager.js" defer></script> <!-- Para descargar contactos en CSV -->
 </body>
 </html>
