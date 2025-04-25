@@ -64,6 +64,13 @@ function displayContacts(contacts) {
     const existingPhoneNumbers = new Set();
     const existingNames = new Set();
 
+    // Ordenar los contactos alfabéticamente por nombre
+    contacts.sort((a, b) => {
+        const nameA = a.nombre?.toLowerCase() || ''; // Convertir a minúsculas para comparación
+        const nameB = b.nombre?.toLowerCase() || '';
+        return nameA.localeCompare(nameB); // Comparar alfabéticamente
+    });
+
     contacts.forEach(contact => {
         // Normalizar el número de teléfono y el nombre
         const normalizedPhone = contact.telefono?.replace(/\D/g, '') || ''; // Eliminar caracteres no numéricos
@@ -97,7 +104,6 @@ function displayContacts(contacts) {
         }
     });
 }
-
 // Evento para importar contactos desde Google
 document.getElementById('importGoogleContacts')?.addEventListener('click', async () => {
     console.log('Botón "Importar Contactos de Google" pulsado');
@@ -134,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Función para importar contactos desde Google
+
 async function importGoogleContacts() {
     try {
         console.log('Iniciando importación de contactos desde Google...');
@@ -146,8 +152,10 @@ async function importGoogleContacts() {
         if (response.ok) {
             const data = await response.json();
             console.log('Contactos importados desde el backend:', data.contacts);
-            displayContacts(data.contacts); // Renderizar los contactos importados
             alert(data.message || 'Contactos importados correctamente');
+
+            // Llamar a loadContacts para recargar todos los contactos (previos e importados)
+            await loadContacts();
         } else if (response.status === 401) {
             const data = await response.json();
             if (data.needsReauth && data.authUrl) {
