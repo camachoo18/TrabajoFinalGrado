@@ -64,18 +64,20 @@ class GoogleAuth {
         }
     }
 
-    async getContacts(accessToken) {
+    async  getGoogleContacts() {
         try {
-            const people = google.people({ version: 'v1', auth: this.oauth2Client });
-            const response = await people.people.connections.list({
+            console.log('Obteniendo contactos desde Google...');
+            const service = google.people({ version: 'v1', auth: oAuth2Client });
+            const response = await service.people.connections.list({
                 resourceName: 'people/me',
-                personFields: 'names,emailAddresses,phoneNumbers,photos',
-                pageSize: 1000
+                pageSize: 100,
+                personFields: 'names,emailAddresses,phoneNumbers',
             });
+            console.log('Contactos obtenidos de Google:', response.data.connections);
             return response.data.connections || [];
-        } catch (error) {
-            console.error('Error obteniendo contactos:', error);
-            return [];
+        } catch (err) {
+            console.error('Error al obtener contactos de Google:', err);
+            throw new Error('Error al obtener contactos de Google en googleauth');
         }
     }
 }

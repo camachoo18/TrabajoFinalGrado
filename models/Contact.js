@@ -18,19 +18,23 @@ class Contact {
             });
         });
     }
-
     static async create(contactData) {
         return new Promise((resolve, reject) => {
+            console.log('Datos recibidos para insertar contacto:', contactData);
             const { nombre, telefono, email, notas, categoria, user_id } = contactData;
             db.run(
                 'INSERT INTO contacts (nombre, telefono, email, notas, categoria, user_id) VALUES (?, ?, ?, ?, ?, ?)',
-                [nombre, telefono, email, notas, categoria, user_id],
+                [nombre, telefono, email, notas || '', categoria || 'Sin Categoría', user_id],
                 function (err) {
-                    if (err) reject(err);
-                    resolve(this.lastID);
+                    if (err) {
+                        console.error('Error al insertar contacto:', err);
+                        reject(err);
+                    } else {
+                        console.log('Contacto insertado con ID:', this.lastID);
+                        resolve(this.lastID);
+                    }
                 }
             );
-            //console.log('Modelo Contact.create: Datos recibidos:', contactData);
         });
     }
 
