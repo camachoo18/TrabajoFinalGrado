@@ -65,24 +65,32 @@ class AuthController {
     static async register(req, res) {
         try {
             const { username, password } = req.body;
-
+    
             // Verificar si el usuario ya existe
             const existingUser = await User.findByUsername(username);
             if (existingUser) {
                 return res.status(400).json({ error: 'El usuario ya existe' });
             }
-
+    
             // Crear el usuario con la contraseña encriptada
             const userId = await User.create(username, password);
-
+    
             // Generar el token JWT
             const token = jwt.sign(
                 { id: userId, username },
                 process.env.JWT_SECRET,
                 { expiresIn: '6h' }
             );
-
-            res.status(201).json({ token });
+    
+            // Establecer la cookie con el token
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 6 * 60 * 60 * 1000, // 6 horas
+            });
+    
+            res.status(201).json({ message: 'Usuario registrado y autenticado correctamente' });
         } catch (error) {
             console.error('Error en el registro:', error);
             res.status(500).json({ error: 'Error en el proceso de registro' });

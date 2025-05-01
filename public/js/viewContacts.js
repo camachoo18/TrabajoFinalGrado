@@ -3,6 +3,35 @@ document.getElementById('logoutButton')?.addEventListener('click', () => {
     window.location.href = '/html/logout.html';
 });
 
+async function editContact(contactId) {
+    try {
+        const response = await fetch(`/contacts/${contactId}`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al cargar datos del contacto');
+        }
+
+        const contact = await response.json();
+
+        // Cargar los datos del contacto en el formulario de edición
+        document.getElementById('editForm').dataset.id = contact.id;
+        document.getElementById('editNombre').value = contact.nombre;
+        document.getElementById('editTelefono').value = contact.telefono;
+        document.getElementById('editEmail').value = contact.email;
+        document.getElementById('editNotas').value = contact.notas;
+        document.getElementById('editCategoria').value = contact.categoria;
+
+        // Mostrar el formulario de edición y ocultar el de agregar
+        
+        document.getElementById('editForm').style.display = 'block';
+    } catch (error) {
+        console.error('Error al cargar datos del contacto:', error);
+        showFeedback('Error al cargar datos del contacto', false);
+    }
+}
+
 // Función para cargar contactos
 async function loadContacts() {
     try {

@@ -50,14 +50,12 @@ async function handleLogin(event) {
 async function handleRegister(event) {
     event.preventDefault();
     const username = document.getElementById('registerUsername').value;
-    const password = document.getElementById('registerPassword').value
+    const password = document.getElementById('registerPassword').value;
 
     try {
         const response = await fetch('/auth/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
 
@@ -66,8 +64,7 @@ async function handleRegister(event) {
             throw new Error(error.error || 'Error en el registro');
         }
 
-        const data = await response.json();
-        
+        // Redirigir al usuario a la página principal después del registro
         window.location.href = '/index.html';
     } catch (error) {
         console.error('Error en el registro:', error);

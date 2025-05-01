@@ -6,7 +6,7 @@ const authenticateToken = (req, res, next) => {
 
     if (!token) {
         console.error('No se proporcionó un token');
-        return res.status(401).json({ error: 'No se proporcionó un token' });
+        return res.status(401).json({ error: 'No autorizado' });
     }
 
     try {
