@@ -23,6 +23,12 @@ async function handleLogin(event) {
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
+    // Mostrar la animación de feedback
+    const feedbackContainer = document.getElementById('login-feedback');
+    const feedbackMessage = document.getElementById('login-feedback-message');
+    feedbackContainer.style.display = 'block';
+    feedbackMessage.textContent = 'Iniciando sesión...';
+
     try {
         const response = await fetch('/auth/login', {
             method: 'POST',
@@ -36,13 +42,17 @@ async function handleLogin(event) {
             throw new Error(error.error || 'Error en el login');
         }
 
-        const data = await response.json();
-        
-        
-        window.location.href = '/index.html'; // Redirigir a index.html
+        // Redirigir al usuario a la página principal después del inicio de sesión
+        feedbackMessage.textContent = 'Inicio de sesión exitoso. Redirigiendo...';
+        setTimeout(() => {
+            window.location.href = '/index.html';
+        }, 2000); // Esperar 2 segundos antes de redirigir
     } catch (error) {
         console.error('Error en el login:', error);
-        alert(error.message);
+        feedbackMessage.textContent = 'Error al iniciar sesión. Inténtalo nuevamente.';
+        setTimeout(() => {
+            feedbackContainer.style.display = 'none'; // Ocultar el feedback después de 2 segundos
+        }, 2000);
     }
 }
 

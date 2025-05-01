@@ -48,13 +48,13 @@
 <script>
     window.onload = async function() {
         try {
-            console.log('Enviando solicitud de logout al servidor...'); // Depuración
+           // console.log('Enviando solicitud de logout al servidor...'); // Depuración
             const response = await fetch('/auth/logout', {
                 method: 'POST',
                 credentials: 'include' // Incluir cookies en la solicitud
             });
     
-            console.log('Respuesta del servidor:', response); // Depuración
+            //console.log('Respuesta del servidor:', response); // Depuración
     
             if (!response.ok) {
                 const errorData = await response.json();
@@ -62,7 +62,7 @@
                 throw new Error(errorData.error || 'Error al cerrar sesión');
             }
     
-            console.log('Sesión cerrada exitosamente'); // Depuración
+           // console.log('Sesión cerrada exitosamente'); // Depuración
             document.getElementById('feedback-message').innerText = "Sesión cerrada exitosamente. Redirigiendo...";
     
             setTimeout(function() {
