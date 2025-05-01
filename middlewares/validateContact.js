@@ -5,8 +5,8 @@ const validateContact = (req, res, next) => {
         return res.status(400).json({ error: 'El nombre es requerido y debe ser una cadena de texto válida' });
     }
 
-    if (telefono && !/^\d{9}$/.test(telefono)) {
-        return res.status(400).json({ error: 'El teléfono debe tener 9 dígitos' });
+    if (telefono && !/^\d{9,11}$/.test(telefono)) {
+        return res.status(400).json({ error: 'El teléfono debe tener 9 a 11 dígitos' });
     }
 
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

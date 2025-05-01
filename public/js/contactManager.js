@@ -22,9 +22,32 @@ async function searchContacts(query) {
 }
 
 // Event listener para la búsqueda dinámica
-document.getElementById('searchInput')?.addEventListener('input', (e) => {
+document.getElementById('searchInput')?.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
-    searchContacts(query);
+
+    if (query === '') {
+        // Si el campo de búsqueda está vacío, cargar todos los contactos
+        await loadContacts();
+        return;
+    }
+
+    try {
+        const response = await fetch(`/contacts/search?q=${encodeURIComponent(query)}`, {
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const contacts = await response.json();
+            displayContacts(contacts); // Mostrar los contactos filtrados
+        } else if (response.status === 404) {
+            displayContacts([]); // Mostrar mensaje de "No se encontraron contactos"
+        } else {
+            throw new Error('Error al buscar contactos');
+        }
+    } catch (err) {
+        console.error('Error al buscar contactos:', err);
+        showFeedback('Error al buscar contactos', false);
+    }
 });
 
 // Función para cargar todos los contactos

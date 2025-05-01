@@ -16,16 +16,19 @@ async function editContact(contactId) {
         const contact = await response.json();
 
         // Cargar los datos del contacto en el formulario de edición
-        document.getElementById('editForm').dataset.id = contact.id;
+        const editForm = document.getElementById('editForm');
+        editForm.dataset.id = contact.id;
         document.getElementById('editNombre').value = contact.nombre;
         document.getElementById('editTelefono').value = contact.telefono;
         document.getElementById('editEmail').value = contact.email;
         document.getElementById('editNotas').value = contact.notas;
         document.getElementById('editCategoria').value = contact.categoria;
 
-        // Mostrar el formulario de edición y ocultar el de agregar
-        
-        document.getElementById('editForm').style.display = 'block';
+        // Mostrar el formulario de edición
+        editForm.style.display = 'block';
+
+        // Desplazar la página hacia el formulario de edición
+        editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (error) {
         console.error('Error al cargar datos del contacto:', error);
         showFeedback('Error al cargar datos del contacto', false);

@@ -15,7 +15,7 @@
         <!-- Formulario para agregar contacto -->
         <form id="contactForm">
             <input type="text" id="nombre" placeholder="Nombre" required minlength="2">
-            <input type="tel" id="telefono" placeholder="Teléfono" required pattern="[0-9]{9}" maxlength="9">
+            <input type="tel" id="telefono" placeholder="Teléfono" required pattern="[0-9]{9,11}" maxlength="11">
             <input type="email" id="email" placeholder="Correo Electrónico" required>
             <textarea id="notas" placeholder="Notas"></textarea>
             
