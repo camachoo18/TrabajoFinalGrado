@@ -26,13 +26,21 @@ class User {
     }
 
     static async create(username, password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10); // Encriptar la contraseña
+        const apiKey = crypto.randomBytes(32).toString('hex'); // Generar una APIKEY única
+    
         return new Promise((resolve, reject) => {
-            db.run('INSERT INTO users (username, password) VALUES (?, ?)', 
-                [username, hashedPassword], 
+            db.run(
+                'INSERT INTO users (username, password, APIKEY) VALUES (?, ?, ?)', 
+                [username, hashedPassword, apiKey], 
                 function(err) {
-                    if (err) reject(err);
-                    resolve(this.lastID);
+                    if (err) {
+                        console.error('Error al crear el usuario:', err.message);
+                        reject(err);
+                    } else {
+                        console.log(`Usuario creado con ID ${this.lastID} y APIKEY ${apiKey}`);
+                        resolve({ id: this.lastID, apiKey }); // Devolver el ID del usuario y la APIKEY
+                    }
                 }
             );
         });
@@ -67,7 +75,6 @@ class User {
     static async regenerateApiKey(req, res) {
         try {
             const userId = req.user.id; // ID del usuario autenticado
-            const crypto = require('crypto');
             const newApiKey = crypto.randomBytes(32).toString('hex'); // Generar una nueva APIKEY
     
             // Actualizar la APIKEY en la base de datos
@@ -80,8 +87,20 @@ class User {
                         return res.status(500).json({ error: 'Error al regenerar la APIKEY' });
                     }
     
-                    
-                    res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey });
+                    console.log(`Nueva APIKEY generada: ${newApiKey}`);
+                    console.log(`APIKEY almacenada en texto plano: ${newApiKey}`);
+                    console.log(`APIKEY regenerada para el usuario con ID ${userId}`);
+    
+                    // Verificar que la APIKEY se haya actualizado correctamente
+                    db.get('SELECT APIKEY FROM users WHERE id = ?', [userId], (err, row) => {
+                        if (err) {
+                            console.error('Error al verificar la APIKEY en la base de datos:', err.message);
+                        } else {
+                            console.log(`APIKEY verificada en la base de datos: ${row.APIKEY}`);
+                        }
+                    });
+    
+                    res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey }); // Devolver la APIKEY original
                 }
             );
         } catch (error) {

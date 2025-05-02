@@ -136,6 +136,24 @@ class ContactController {
             res.status(500).json({ error: 'Error al filtrar contactos' });
         }
     }
+    static async getByUsername(req, res) {
+        try {
+            const { username } = req.params;
+
+            // Obtener el usuario por username
+            const user = await User.findByUsername(username);
+            if (!user) {
+                return res.status(404).json({ error: 'Usuario no encontrado' });
+            }
+
+            // Obtener los contactos asociados al usuario
+            const contacts = await Contact.getAll(user.id);
+            res.json(contacts);
+        } catch (error) {
+            console.error('Error al obtener contactos:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    }
 }
 
 module.exports = ContactController; 

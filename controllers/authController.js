@@ -127,6 +127,7 @@ class AuthController {
                 if (!row) {
                     return res.status(404).json({ error: 'Usuario no encontrado' });
                 }
+                 // Depuración
                 res.json({ apiKey: row.APIKEY });
             });
         } catch (error) {
@@ -139,7 +140,7 @@ class AuthController {
         try {
             const userId = req.user.id; // ID del usuario autenticado
             const newApiKey = crypto.randomBytes(32).toString('hex'); // Generar una nueva APIKEY
-
+    
             // Actualizar la APIKEY en la base de datos
             db.run(
                 'UPDATE users SET APIKEY = ? WHERE id = ?',
@@ -149,13 +150,32 @@ class AuthController {
                         console.error('Error al regenerar la APIKEY:', err.message);
                         return res.status(500).json({ error: 'Error al regenerar la APIKEY' });
                     }
-
+    
+                    console.log(`Nueva APIKEY generada: ${newApiKey}`);
+                    console.log(`APIKEY almacenada en texto plano: ${newApiKey}`);
                     console.log(`APIKEY regenerada para el usuario con ID ${userId}`);
-                    res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey });
+                    res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey }); // Devolver la APIKEY original
                 }
             );
         } catch (error) {
             console.error('Error al regenerar la APIKEY:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    }
+    static async getUserByUsername(req, res) {
+        try {
+            const { username } = req.params;
+
+            // Verificar que el usuario autenticado coincide con el username proporcionado
+            if (req.user.username !== username) {
+                return res.status(403).json({ error: 'No tienes permiso para acceder a esta información' });
+            }
+
+            // Obtener los contactos asociados al usuario autenticado
+            const contacts = await Contact.getAll(req.user.id);
+            res.json(contacts);
+        } catch (error) {
+            console.error('Error al obtener contactos:', error);
             res.status(500).json({ error: 'Error interno del servidor' });
         }
     }

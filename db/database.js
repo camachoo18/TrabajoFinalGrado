@@ -86,6 +86,7 @@ db.all("PRAGMA table_info(users);", (err, rows) => {
         // Añadir la columna `APIKEY` sin un valor predeterminado
         db.run(`
             ALTER TABLE users ADD COLUMN APIKEY TEXT;
+            ALTER TABLE users ADD COLUMN email TEXT;
         `, (err) => {
             if (err) {
                 console.error('Error al añadir la columna `APIKEY`:', err.message);
