@@ -16,9 +16,12 @@
             <a href="/html/view-contacts.html" class="nav-button">Ver Contactos</a>
             <a href="/html/plans.html" class="nav-button">Elige tu Plan</a> <!-- Nuevo botón -->
             <button id="logoutButton" class="nav-button">Cerrar Sesión</button>
+
         </div>
+<div id="apiKeyDisplay"></div>
+<button id="viewApiKeyButton" class="nav-button">Ver APIKEY</button>
+<button id="regenerateApiKeyButton" class="nav-button">Regenerar APIKEY</button>
         
-        <!-- Botón para alternar entre modo claro y oscuro -->
 
     </div>
     
@@ -27,8 +30,10 @@
     <script src="/js/auth.js"></script>
     
     <script>
-// Verificar si el usuario está autenticado al cargar la página
 
+            // Verificar si el usuario está autenticado al cargar la página
+        document.getElementById('viewApiKeyButton').addEventListener('click', fetchApiKey);
+        document.getElementById('regenerateApiKeyButton').addEventListener('click', regenerateApiKey);
 
         // Redirigir a logout.html al hacer clic en el botón de cerrar sesión
         document.getElementById('logoutButton').addEventListener('click', () => {

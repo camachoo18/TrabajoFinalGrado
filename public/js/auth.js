@@ -62,6 +62,21 @@ async function handleRegister(event) {
     const username = document.getElementById('registerUsername').value;
     const password = document.getElementById('registerPassword').value;
 
+    // Mostrar la animación de feedback
+    const feedbackContainer = document.createElement('div');
+    feedbackContainer.className = 'feedback-container';
+
+    const feedbackMessage = document.createElement('div');
+    feedbackMessage.className = 'feedback-message';
+    feedbackMessage.textContent = 'Registrando usuario...';
+
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner';
+
+    feedbackContainer.appendChild(feedbackMessage);
+    feedbackContainer.appendChild(spinner);
+    document.body.appendChild(feedbackContainer);
+
     try {
         const response = await fetch('/auth/register', {
             method: 'POST',
@@ -74,11 +89,22 @@ async function handleRegister(event) {
             throw new Error(error.error || 'Error en el registro');
         }
 
-        // Redirigir al usuario a la página principal después del registro
-        window.location.href = '/index.html';
+        // Actualizar el mensaje de feedback
+        feedbackMessage.textContent = 'Registro exitoso. Redirigiendo...';
+
+        // Redirigir al usuario a la página de login después de 2 segundos
+        setTimeout(() => {
+            feedbackContainer.remove();
+            window.location.href = '/html/login.html';
+        }, 2000);
     } catch (error) {
         console.error('Error en el registro:', error);
-        alert(error.message);
+
+        // Mostrar mensaje de error en el feedback
+        feedbackMessage.textContent = 'Error al registrarse. Inténtalo nuevamente.';
+        setTimeout(() => {
+            feedbackContainer.remove();
+        }, 2000);
     }
 }
 
@@ -163,6 +189,43 @@ function showVisualFeedback(message, success = true) {
             window.location.href = '/html/index.html'; // Redirigir a la página principal después de 2 segundos
         }
     }, 2000); // 2 segundos de espera para mostrar el feedback
+}
+
+async function fetchApiKey() {
+    try {
+        const response = await fetch('/auth/apikey', {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al obtener la APIKEY');
+        }
+
+        const data = await response.json();
+        alert(`Tu APIKEY es: ${data.apiKey}`);
+    } catch (error) {
+        console.error('Error al obtener la APIKEY:', error);
+    }
+}
+
+async function regenerateApiKey() {
+    try {
+        const response = await fetch('/auth/regenerate-apikey', {
+            method: 'POST',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al regenerar la APIKEY');
+        }
+
+        const data = await response.json();
+        alert(`APIKEY regenerada correctamente. Tu nueva APIKEY: ${data.apiKey}`);
+    
+    } catch (error) {
+        console.error('Error al regenerar la APIKEY:', error);
+        alert('Error al regenerar la APIKEY');
+    }
 }
 
 // Estilos para el feedback visual

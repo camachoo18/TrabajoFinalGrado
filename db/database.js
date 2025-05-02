@@ -60,16 +60,63 @@ db.run(`
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        APIKEY TEXT NOT NULL DEFAULT (hex(randomblob(16)))
     );
 `, (err) => {
     if (err) {
         console.error('Error al crear la tabla de usuarios:', err.message);
     } else {
-        //console.log('Tabla de usuarios creada (o ya existe).'); Debug tabla usuarios creada
+        console.log('Tabla de usuarios creada (o ya existe).');
     }
 });
 
+
+// Verificar si la columna `APIKEY` existe en la tabla `users`
+db.all("PRAGMA table_info(users);", (err, rows) => {
+    if (err) {
+        console.error('Error al verificar la tabla de usuarios:', err.message);
+        return;
+    }
+
+    const columnExists = rows.some(row => row.name === 'APIKEY');
+    if (!columnExists) {
+        console.log('La columna `APIKEY` no existe. Añadiéndola a la tabla `users`...');
+
+        // Añadir la columna `APIKEY` sin un valor predeterminado
+        db.run(`
+            ALTER TABLE users ADD COLUMN APIKEY TEXT;
+        `, (err) => {
+            if (err) {
+                console.error('Error al añadir la columna `APIKEY`:', err.message);
+            } else {
+                console.log('Columna `APIKEY` añadida correctamente.');
+
+                // Generar APIKEYs para los usuarios existentes
+                db.all("SELECT id FROM users", (err, rows) => {
+                    if (err) {
+                        console.error('Error al obtener usuarios para generar APIKEYs:', err.message);
+                        return;
+                    }
+
+                    const crypto = require('crypto');
+                    rows.forEach(user => {
+                        const apiKey = crypto.randomBytes(16).toString('hex');
+                        db.run("UPDATE users SET APIKEY = ? WHERE id = ?", [apiKey, user.id], (err) => {
+                            if (err) {
+                                console.error(`Error al generar APIKEY para el usuario con ID ${user.id}:`, err.message);
+                            } else {
+                                console.log(`APIKEY generada para el usuario con ID ${user.id}: ${apiKey}`);
+                            }
+                        });
+                    });
+                });
+            }
+        });
+    } else {
+        console.log('La columna `APIKEY` ya existe en la tabla `users`.');
+    }
+});
 
 
 

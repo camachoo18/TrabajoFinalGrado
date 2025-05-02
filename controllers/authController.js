@@ -2,6 +2,8 @@ require('dotenv').config();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const db = require('../db/database');
 
 class AuthController {
     static async checkAuth(req, res) {
@@ -112,6 +114,49 @@ class AuthController {
         } catch (error) {
             console.error('Error en el logout:', error);
             res.status(500).json({ error: 'Error al cerrar sesión' });
+        }
+    }
+    static async getApiKey(req, res) {
+        try {
+            const userId = req.user.id; // ID del usuario autenticado
+            db.get('SELECT APIKEY FROM users WHERE id = ?', [userId], (err, row) => {
+                if (err) {
+                    console.error('Error al obtener la APIKEY:', err.message);
+                    return res.status(500).json({ error: 'Error al obtener la APIKEY' });
+                }
+                if (!row) {
+                    return res.status(404).json({ error: 'Usuario no encontrado' });
+                }
+                res.json({ apiKey: row.APIKEY });
+            });
+        } catch (error) {
+            console.error('Error al obtener la APIKEY:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    }
+
+    static async regenerateApiKey(req, res) {
+        try {
+            const userId = req.user.id; // ID del usuario autenticado
+            const newApiKey = crypto.randomBytes(32).toString('hex'); // Generar una nueva APIKEY
+
+            // Actualizar la APIKEY en la base de datos
+            db.run(
+                'UPDATE users SET APIKEY = ? WHERE id = ?',
+                [newApiKey, userId],
+                function (err) {
+                    if (err) {
+                        console.error('Error al regenerar la APIKEY:', err.message);
+                        return res.status(500).json({ error: 'Error al regenerar la APIKEY' });
+                    }
+
+                    console.log(`APIKEY regenerada para el usuario con ID ${userId}`);
+                    res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey });
+                }
+            );
+        } catch (error) {
+            console.error('Error al regenerar la APIKEY:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
         }
     }
 }

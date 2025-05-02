@@ -1,5 +1,10 @@
 const db = require('../db/database');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+
+function generarApiKey() {
+    return crypto.randomBytes(32).toString('hex'); // Genera un string de 64 caracteres
+}
 
 class User {
     static async findByUsername(username) {
@@ -57,6 +62,32 @@ class User {
 
     static async comparePassword(password, hashedPassword) {
         return bcrypt.compare(password, hashedPassword);
+    }
+
+    static async regenerateApiKey(req, res) {
+        try {
+            const userId = req.user.id; // ID del usuario autenticado
+            const crypto = require('crypto');
+            const newApiKey = crypto.randomBytes(32).toString('hex'); // Generar una nueva APIKEY
+    
+            // Actualizar la APIKEY en la base de datos
+            db.run(
+                'UPDATE users SET APIKEY = ? WHERE id = ?',
+                [newApiKey, userId],
+                function (err) {
+                    if (err) {
+                        console.error('Error al regenerar la APIKEY:', err.message);
+                        return res.status(500).json({ error: 'Error al regenerar la APIKEY' });
+                    }
+    
+                    
+                    res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey });
+                }
+            );
+        } catch (error) {
+            console.error('Error al regenerar la APIKEY:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
     }
 }
 

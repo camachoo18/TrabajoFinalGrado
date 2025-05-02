@@ -6,6 +6,8 @@ const authenticateToken = require('../middlewares/authenticateToken');
 // Rutas públicas
 router.post('/login', AuthController.login);
 router.post('/register', AuthController.register);
+router.get('/apikey', authenticateToken, AuthController.getApiKey);
+router.post('/regenerate-apikey', authenticateToken, AuthController.regenerateApiKey);
 
 // Rutas protegidas
 router.get('/isAuthenticated', authenticateToken, AuthController.checkAuth);
