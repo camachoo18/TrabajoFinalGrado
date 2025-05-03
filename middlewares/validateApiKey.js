@@ -1,7 +1,8 @@
 const db = require('../db/database');
 
 async function validateApiKey(req, res, next) {
-    const apiKey = req.header('APIKEY'); // Obtener la APIKEY del encabezado
+    // Obtener la APIKEY desde las cookies o el encabezado
+    const apiKey = req.cookies?.apiKey || req.header('APIKEY');
 
     if (!apiKey) {
         return res.status(401).json({ error: 'APIKEY es requerida' });
@@ -14,8 +15,6 @@ async function validateApiKey(req, res, next) {
                 console.error('Error al validar la APIKEY:', err.message);
                 return res.status(500).json({ error: 'Error interno del servidor' });
             }
-            console.log('APIKEY proporcionada:', apiKey);
-            console.log('Resultado de la consulta:', row);
 
             if (!row) {
                 console.error('No se encontró un usuario con la APIKEY proporcionada.');

@@ -127,8 +127,16 @@ class AuthController {
                 if (!row) {
                     return res.status(404).json({ error: 'Usuario no encontrado' });
                 }
-                 // Depuración
-                res.json({ apiKey: row.APIKEY });
+    
+                // Establecer la APIKEY como cookie httpOnly
+                res.cookie('apiKey', row.APIKEY, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production', // Solo en HTTPS en producción
+                    sameSite: 'strict',
+                    maxAge: 6 * 60 * 60 * 1000 // 6 horas
+                });
+    
+                res.json({ message: 'APIKEY configurada en las cookies' });
             });
         } catch (error) {
             console.error('Error al obtener la APIKEY:', error);

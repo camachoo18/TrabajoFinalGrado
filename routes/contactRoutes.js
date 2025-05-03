@@ -13,6 +13,7 @@ router.get('/search', contactController.search);
 router.get('/category/:categoryId', contactController.filterByCategory);
 router.get('/filter', contactController.filterByCategory);
 
+router.get('/contacts', validateApiKey, contactController.getAll);
 // Rutas CRUD
 router.get('/', validateApiKey, contactController.getAll);
 

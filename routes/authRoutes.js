@@ -11,7 +11,7 @@ router.post('/register', AuthController.register);
 router.get('/apikey', authenticateToken, AuthController.getApiKey);
 router.post('/regenerate-apikey', authenticateToken, AuthController.regenerateApiKey);
 
-router.get('/contacts/:username',apiLimiter, validateApiKey, AuthController.getUserByUsername)
+
 
 // ruta para exponer la API
 router.get('/contacts/:username',apiLimiter, authenticateToken,validateApiKey, AuthController.getUserByUsername)
