@@ -1,5 +1,5 @@
 const { google } = require('googleapis');
-const googleAuth = require('../services/googleAuth');
+const googleAuth = require('../services/googleOAuthService');
 const Contact = require('../models/Contact');
 const db = require('../db/database'); // Asegúrate de que esta referencia sea correcta
 
