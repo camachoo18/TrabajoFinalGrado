@@ -35,7 +35,7 @@ app.use(session({
 }));
 // Rutas protegidas con authenticateToken
 app.use('/auth', authRoutes);
-app.use('/contacts', authenticateToken, contactRoutes);
+app.use('/contacts', contactRoutes);
 app.use('/categories', authenticateToken, categoryRoutes);
 app.use('/google', authenticateToken, googleRoutes);
 

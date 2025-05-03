@@ -8,12 +8,14 @@ async function validateApiKey(req, res, next) {
     }
 
     try {
-        // Obtener el usuario asociado a la APIKEY
+        // Buscar el usuario asociado a la APIKEY
         db.get('SELECT id, username FROM users WHERE APIKEY = ?', [apiKey], (err, row) => {
             if (err) {
                 console.error('Error al validar la APIKEY:', err.message);
                 return res.status(500).json({ error: 'Error interno del servidor' });
             }
+            console.log('APIKEY proporcionada:', apiKey);
+            console.log('Resultado de la consulta:', row);
 
             if (!row) {
                 console.error('No se encontró un usuario con la APIKEY proporcionada.');

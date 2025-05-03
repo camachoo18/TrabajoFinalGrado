@@ -4,7 +4,10 @@ const validateContact = require('../middlewares/validateContact');
 class ContactController {
     static async getAll(req, res) {
         try {
-            const contacts = await Contact.getAll(req.user.id);
+            const userId = req.user.id; // ID del usuario autenticado
+
+            // Obtener los contactos asociados al usuario
+            const contacts = await Contact.getAll(userId);
             res.json(contacts);
         } catch (error) {
             console.error('Error al obtener contactos:', error);
