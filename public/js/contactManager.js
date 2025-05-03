@@ -236,10 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verificar si estamos en una página que requiere cargar contactos
     const tableBody = document.querySelector('#contactsTableBody');
     if (tableBody) {
-        console.log('Elemento #contactsTableBody encontrado. Cargando contactos...');
+       // console.log('Elemento #contactsTableBody encontrado. Cargando contactos...');
         loadContacts(); // Cargar todos los contactos al inicio solo si existe la tabla
     } else {
-        console.log('No se encontró el elemento #contactsTableBody. Esta página no requiere cargar contactos.');
+        //console.log('No se encontró el elemento #contactsTableBody. Esta página no requiere cargar contactos.');
     }
 });
 

@@ -77,14 +77,14 @@ app.get('/index.html', (req, res) => {
 
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
-    console.log('Código de autorización recibido:', code);
+    
 
     try {
         const tokens = await googleAuth.getAccessToken(code);
-        console.log('Tokens obtenidos:', tokens);
+        //console.log('Tokens obtenidos:', tokens); Depuracion
 
         req.session.googleTokens = tokens; // Guardar tokens en la sesión
-        console.log('Tokens guardados en la sesión:', req.session.googleTokens);
+        //console.log('Tokens guardados en la sesión:', req.session.googleTokens);
 
         res.redirect('/html/view-contacts.html?auth=success&import=true');
     } catch (err) {

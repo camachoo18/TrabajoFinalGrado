@@ -21,7 +21,6 @@ async function validateApiKey(req, res, next) {
                 return res.status(401).json({ error: 'APIKEY inválida' });
             }
 
-            console.log('Usuario autenticado:', row);
 
             // Adjuntar el ID del usuario al objeto `req`
             req.user = { id: row.id, username: row.username };

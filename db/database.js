@@ -25,7 +25,7 @@ db.serialize(() => {
         if (err) {
             console.error('Error al crear la tabla contacts:', err.message);
         } else {
-            console.log('Tabla contacts verificada o creada.');
+           // console.log('Tabla contacts verificada o creada.');
         }
     });
 });
@@ -38,7 +38,7 @@ db.all("PRAGMA table_info(contacts);", (err, rows) => {
 
     const columnExists = rows.some(row => row.name === 'user_id');
     if (!columnExists) {
-        console.log('La columna `user_id` no existe. Añadiéndola a la tabla `contacts`...');
+        //('La columna `user_id` no existe. Añadiéndola a la tabla `contacts`...');
 
         // Añadir la columna `user_id` a la tabla `contacts`
         db.run(`
@@ -47,7 +47,7 @@ db.all("PRAGMA table_info(contacts);", (err, rows) => {
             if (err) {
                 console.error('Error al añadir la columna `user_id`:', err.message);
             } else {
-                console.log('Columna `user_id` añadida correctamente.');
+               // console.log('Columna `user_id` añadida correctamente.');
             }
         });
     } else {
@@ -67,7 +67,7 @@ db.run(`
     if (err) {
         console.error('Error al crear la tabla de usuarios:', err.message);
     } else {
-        console.log('Tabla de usuarios creada (o ya existe).');
+        //console.log('Tabla de usuarios creada (o ya existe).');
     }
 });
 
@@ -91,7 +91,7 @@ db.all("PRAGMA table_info(users);", (err, rows) => {
             if (err) {
                 console.error('Error al añadir la columna `APIKEY`:', err.message);
             } else {
-                console.log('Columna `APIKEY` añadida correctamente.');
+                //console.log('Columna `APIKEY` añadida correctamente.');
 
                 // Generar APIKEYs para los usuarios existentes
                 db.all("SELECT id FROM users", (err, rows) => {
@@ -107,7 +107,7 @@ db.all("PRAGMA table_info(users);", (err, rows) => {
                             if (err) {
                                 console.error(`Error al generar APIKEY para el usuario con ID ${user.id}:`, err.message);
                             } else {
-                                console.log(`APIKEY generada para el usuario con ID ${user.id}: ${apiKey}`);
+                                //console.log(`APIKEY generada para el usuario con ID ${user.id}: ${apiKey}`);
                             }
                         });
                     });

@@ -102,14 +102,14 @@ class AuthController {
     // Manejar el cierre de sesión
     static async logout(req, res) {
         try {
-            console.log('Cerrando sesión para el usuario:', req.user); // Depuración
+            //console.log('Cerrando sesión para el usuario:', req.user); // Depuración
             res.clearCookie('token', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 path: '/' // Asegurarse de que coincida con el path de la cookie
             });
-            console.log('Cookie eliminada correctamente'); // Depuración
+           // console.log('Cookie eliminada correctamente'); // Depuración
             res.json({ message: 'Sesión cerrada exitosamente' });
         } catch (error) {
             console.error('Error en el logout:', error);
@@ -164,9 +164,9 @@ class AuthController {
                         return res.status(500).json({ error: 'Error al regenerar la APIKEY' });
                     }
     
-                    console.log(`Nueva APIKEY generada: ${newApiKey}`);
-                    console.log(`APIKEY almacenada en texto plano: ${newApiKey}`);
-                    console.log(`APIKEY regenerada para el usuario con ID ${userId}`);
+                    //console.log(`Nueva APIKEY generada: ${newApiKey}`);
+                    //console.log(`APIKEY almacenada en texto plano: ${newApiKey}`);
+                    //console.log(`APIKEY regenerada para el usuario con ID ${userId}`);
                     res.json({ message: 'APIKEY regenerada correctamente', apiKey: newApiKey }); // Devolver la APIKEY original
                 }
             );

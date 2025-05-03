@@ -20,7 +20,6 @@ class Contact {
     }
     static async create(contactData) {
         return new Promise((resolve, reject) => {
-            console.log('Datos recibidos para insertar contacto:', contactData);
             const { nombre, telefono, email, notas, categoria, user_id } = contactData;
             db.run(
                 'INSERT INTO contacts (nombre, telefono, email, notas, categoria, user_id) VALUES (?, ?, ?, ?, ?, ?)',
@@ -30,7 +29,6 @@ class Contact {
                         console.error('Error al insertar contacto:', err);
                         reject(err);
                     } else {
-                        console.log('Contacto insertado con ID:', this.lastID);
                         resolve(this.lastID);
                     }
                 }
@@ -75,15 +73,13 @@ class Contact {
                 )
             `;
     
-            console.log('Consulta SQL para búsqueda:', sql); // Depuración
-            console.log('Parámetros:', [userId, searchTerm, searchTerm, searchTerm, searchTerm]); // Depuración
     
             db.all(sql, [userId, searchTerm, searchTerm, searchTerm, searchTerm], (err, rows) => {
                 if (err) {
                     console.error('Error al buscar contactos:', err.message);
                     reject(err);
                 } else {
-                    console.log('Resultados de búsqueda:', rows); // Depuración
+                    //console.log('Resultados de búsqueda:', rows); // Depuración
                     resolve(rows);
                 }
             });
@@ -97,15 +93,13 @@ class Contact {
                 WHERE categoria = ? AND user_id = ?
             `;
     
-            console.log('Consulta SQL para filtrar por categoría:', sql); // Depuración
-            console.log('Parámetros:', [categoria, userId]); // Depuración
     
             db.all(sql, [categoria, userId], (err, rows) => {
                 if (err) {
                     console.error('Error al filtrar contactos por categoría:', err.message);
                     reject(err);
                 } else {
-                    console.log('Contactos filtrados por categoría:', rows); // Depuración
+                    //console.log('Contactos filtrados por categoría:', rows); // Depuración
                     resolve(rows);
                 }
             });

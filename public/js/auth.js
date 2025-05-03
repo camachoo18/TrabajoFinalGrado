@@ -111,12 +111,12 @@ async function handleRegister(event) {
 // Función para manejar el logout
 async function handleLogout() {
     try {
-        console.log('Enviando solicitud de logout al servidor...');
+        //console.log('Enviando solicitud de logout al servidor...');
         const response = await fetch('/auth/logout', {
             method: 'POST',
             credentials: 'include'
         });
-        console.log('Respuesta del servidor:', response); // Depuración
+       
 
         if (!response.ok) {
             throw new Error('Error al cerrar sesión');

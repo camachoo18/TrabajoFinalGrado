@@ -32,14 +32,13 @@ class GoogleController {
     async handleCallback(req, res) {
         try {
             const { code } = req.query;
-            console.log('Código de autorización recibido:', code);
+           
 
             const { tokens } = await googleAuth.getOAuth2Client().getToken(code);
-            console.log('Tokens obtenidos:', tokens);
+           
 
             req.session.googleTokens = tokens; // Guardar tokens en la sesión
-            console.log('Tokens guardados en la sesión:', req.session.googleTokens);
-
+            
             res.redirect('/html/view-contacts.html?auth=success&import=true');
         } catch (error) {
             console.error('Error en el callback de Google:', error);
@@ -50,7 +49,6 @@ class GoogleController {
     // Importar contactos desde Google
     async importContacts(req, res) {
         try {
-            console.log('Iniciando importación de contactos desde Google...');
             const oauth2Client = googleAuth.getOAuth2Client();
             oauth2Client.setCredentials(req.session.googleTokens);
 
@@ -61,7 +59,7 @@ class GoogleController {
             });
 
             const contacts = response.data.connections || [];
-            console.log('Contactos obtenidos desde Google:', contacts);
+            //console.log('Contactos obtenidos desde Google:', contacts);
 
             const userId = req.user.id; // ID del usuario autenticado
 
@@ -84,7 +82,6 @@ class GoogleController {
                     const telefono = contact.phoneNumbers?.[0]?.value?.replace(/\D/g, '') || ''; // Normalizar el número de teléfono
 
                     if (!telefono) {
-                        console.log(`El contacto "${nombre}" no tiene número de teléfono. No se verificará duplicado.`);
                         continue; // Omitir contactos sin número de teléfono
                     }
 
@@ -102,14 +99,14 @@ class GoogleController {
                             stmtInsertContact.run([nombre, email, telefono, userId], function (err) {
                                 if (err) reject(err);
                                 else {
-                                    console.log(`Contacto "${nombre}" insertado con éxito.`);
+                                    //console.log(`Contacto "${nombre}" insertado con éxito.`);
                                     importedContacts.push({ id: this.lastID, nombre, email, telefono });
                                     resolve();
                                 }
                             });
                         });
                     } else {
-                        console.log(`El contacto con teléfono ${telefono} ya existe. No se insertará.`);
+                       // console.log(`El contacto con teléfono ${telefono} ya existe. No se insertará.`);
                     }
                 } catch (err) {
                     console.error('Error al procesar contacto:', err);

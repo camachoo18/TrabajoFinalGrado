@@ -38,7 +38,7 @@ class User {
                         console.error('Error al crear el usuario:', err.message);
                         reject(err);
                     } else {
-                        console.log(`Usuario creado con ID ${this.lastID} y APIKEY ${apiKey}`);
+                        //console.log(`Usuario creado con ID ${this.lastID} y APIKEY ${apiKey}`);
                         resolve({ id: this.lastID, apiKey }); // Devolver el ID del usuario y la APIKEY
                     }
                 }

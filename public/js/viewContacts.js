@@ -38,7 +38,7 @@ async function editContact(contactId) {
 // Función para cargar contactos
 async function loadContacts() {
     try {
-        console.log('Cargando contactos desde el servidor...');
+        //console.log('Cargando contactos desde el servidor...');
         const response = await fetch('/contacts', {
             credentials: 'include'
         });
@@ -48,7 +48,7 @@ async function loadContacts() {
         }
 
         const contacts = await response.json();
-        console.log('Contactos cargados:', contacts);
+       
         displayContacts(contacts);
     } catch (error) {
         console.error('Error:', error);
@@ -132,20 +132,19 @@ function displayContacts(contacts) {
             existingPhoneNumbers.add(normalizedPhone);
             existingNames.add(normalizedName);
         } else {
-            console.log(`Contacto duplicado ignorado: ${contact.nombre} (${contact.telefono})`);
+            //console.log(`Contacto duplicado ignorado: ${contact.nombre} (${contact.telefono})`);
         }
     });
 }
 // Evento para importar contactos desde Google
 document.getElementById('importGoogleContacts')?.addEventListener('click', async () => {
-    console.log('Botón "Importar Contactos de Google" pulsado');
 
     try {
         // Solicitar la URL de autenticación al servidor
         const response = await fetch('/google/auth-url');
         if (response.ok) {
             const { authUrl } = await response.json();
-            console.log('Redirigiendo a:', authUrl);
+            
             window.location.href = authUrl; // Redirigir al flujo de autenticación de Google
         } else {
             throw new Error('Error al obtener la URL de autenticación');
@@ -163,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shouldImport = urlParams.get('import');
 
     if (authStatus === 'success' && shouldImport === 'true') {
-        console.log('Autenticación exitosa, intentando importar contactos...');
+        //console.log('Autenticación exitosa, intentando importar contactos...');
         window.history.replaceState({}, document.title, window.location.pathname); // Limpiar la URL
         importGoogleContacts(); // Llamar automáticamente a la función de importación
     } else if (authStatus === 'error') {
@@ -175,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function importGoogleContacts() {
     try {
-        console.log('Iniciando importación de contactos desde Google...');
+        //console.log('Iniciando importación de contactos desde Google...');
         const response = await fetch('/google/import-contacts', {
             method: 'POST',
             credentials: 'include', // Incluir cookies en la solicitud
@@ -183,7 +182,6 @@ async function importGoogleContacts() {
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Contactos importados desde el backend:', data.contacts);
             alert(data.message || 'Contactos importados correctamente');
 
             // Llamar a loadContacts para recargar todos los contactos (previos e importados)
@@ -191,7 +189,6 @@ async function importGoogleContacts() {
         } else if (response.status === 401) {
             const data = await response.json();
             if (data.needsReauth && data.authUrl) {
-                console.log('Redirigiendo a:', data.authUrl);
                 window.location.href = data.authUrl; // Redirigir al flujo de autenticación
             } else {
                 alert('Error de autenticación');
