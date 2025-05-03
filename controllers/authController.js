@@ -118,7 +118,11 @@ class AuthController {
     }
     static async getApiKey(req, res) {
         try {
-            const userId = req.user.id; // ID del usuario autenticado
+            const userId = req.user?.id; // Asegurarse de que req.user esté definido
+            if (!userId) {
+                return res.status(401).json({ error: 'Usuario no autenticado' });
+            }
+    
             db.get('SELECT APIKEY FROM users WHERE id = ?', [userId], (err, row) => {
                 if (err) {
                     console.error('Error al obtener la APIKEY:', err.message);
@@ -136,7 +140,8 @@ class AuthController {
                     maxAge: 6 * 60 * 60 * 1000 // 6 horas
                 });
     
-                res.json({ message: 'APIKEY configurada en las cookies' });
+                // Devolver la APIKEY en el cuerpo de la respuesta JSON
+                res.json({ apiKey: row.APIKEY });
             });
         } catch (error) {
             console.error('Error al obtener la APIKEY:', error);
