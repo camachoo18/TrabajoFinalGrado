@@ -29,11 +29,11 @@ Esta aplicación es una **agenda de contactos** con funcionalidades adicionales 
 - Generación y regeneración de APIKEYs únicas para cada usuario.
 
 ### 4. **Exposición de la API**
-- Los usuarios pueden acceder a su información de contactos mediante la APIKEY.
+- Los usuarios pueden acceder a su información de contactos mediante la APIKEY de cada usuario independiente.
 - Ejemplo de uso:
 
 ```bash
-curl -X GET   'http://localhost:3000/api/users/pepito'   -H 'APIKEY: 1234567890abcdef1234567890abcdef'
+curl -X GET "http://localhost:3000/contacts" -H "APIKEY: 487946c6fdf4129a94ab0b557c6de5e563ef5c289a6a7283d0ba062b834d59a7"
 ```
 
 ---
