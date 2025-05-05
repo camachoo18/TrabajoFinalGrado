@@ -16,22 +16,20 @@
             <a href="/html/view-contacts.html" class="nav-button">Ver Contactos</a>
             <a href="/html/plans.html" class="nav-button">Elige tu Plan</a> <!-- Nuevo botón -->
             <button id="logoutButton" class="nav-button">Cerrar Sesión</button>
-
         </div>
-<div id="apiKeyDisplay"></div>
-<button id="viewApiKeyButton" class="nav-button">Ver APIKEY</button>
-<button id="regenerateApiKeyButton" class="nav-button">Regenerar APIKEY</button>
-        
 
+        
+        <div id="apiKeySection" style="margin-top: 20px;">
+            <div id="apiKeyDisplay"></div>
+            <button id="viewApiKeyButton" class="nav-button">Ver APIKEY</button>
+            <button id="regenerateApiKeyButton" class="nav-button">Regenerar APIKEY</button>
+        </div>
     </div>
     
     <!-- Scripts -->
-    
     <script src="/js/auth.js"></script>
-    
     <script>
-
-            // Verificar si el usuario está autenticado al cargar la página
+        // Verificar si el usuario está autenticado al cargar la página
         document.getElementById('viewApiKeyButton').addEventListener('click', fetchApiKey);
         document.getElementById('regenerateApiKeyButton').addEventListener('click', regenerateApiKey);
 
