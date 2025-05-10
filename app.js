@@ -9,12 +9,14 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const googleRoutes = require('./routes/googleRoutes');
 const authenticateToken = require('./middlewares/authenticateToken');
 const googleAuth = require('./src/googleAuthHelper');
-const session = require('express-session'); // Importar express-session
+const session = require('express-session'); 
+const rateLimiter = require('./middlewares/rateLimiter'); 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET
 
 // Middleware
 app.use(express.json());
+app.use(rateLimiter);
 app.use(cookieParser());
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
@@ -34,7 +36,7 @@ app.use(session({
     }
 }));
 // Rutas protegidas con authenticateToken
-app.use('/auth', authRoutes);
+app.use('/auth', rateLimiter, authRoutes);
 app.use('/contacts', contactRoutes);
 app.use('/categories', authenticateToken, categoryRoutes);
 app.use('/google', authenticateToken, googleRoutes);
