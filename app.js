@@ -19,9 +19,7 @@ app.use(express.json());
 app.use(rateLimiter);
 app.use(cookieParser());
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? 'https://agendifynow.online/' // cuando utilice el vps
-        : 'http://localhost:3000',
+    origin: 'https://agendifynow.online', // Permitir solo tu dominio
     credentials: true
 }));
 // Configurar el middleware de sesión
@@ -32,6 +30,7 @@ app.use(session({
     cookie: {
         secure: process.env.NODE_ENV === 'production', // Solo usar cookies seguras en producción
         httpOnly: true, // Asegura que las cookies no sean accesibles desde JavaScript del cliente
+        sameSite: 'strict', // Asegura que las cookies solo se envíen en solicitudes del mismo sitio
         maxAge: 6 * 60 * 60 * 1000 // 6 horas
     }
 }));
