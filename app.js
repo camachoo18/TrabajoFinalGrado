@@ -20,7 +20,7 @@ app.use(rateLimiter);
 app.use(cookieParser());
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
-        ? 'https://tu-dominio.com' // cuando utilice el vps
+        ? 'https://agendifynow.online/' // cuando utilice el vps
         : 'http://localhost:3000',
     credentials: true
 }));
