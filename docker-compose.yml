@@ -3,9 +3,31 @@ services:
     build: .
     container_name: agenda-contactos-prod
     ports:
-      - "3000:3000" # El contenedor escucha en 3000, Caddy redirige desde 443
+      - "3000:3000"
     environment:
       - NODE_ENV=production
     volumes:
-        - ./db:/app/db
+      - ./db:/app/db
     restart: always
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  caddy_data:
+  caddy_config:
