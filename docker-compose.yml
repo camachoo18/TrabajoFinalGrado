@@ -1,12 +1,11 @@
 services:
   agenda-contactos:
     build: .
-    container_name: agenda-contactos-dev
+    container_name: agenda-contactos-prod
     ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
+      - "3000:3000" # El contenedor escucha en 3000, Caddy redirige desde 443
     environment:
-      - NODE_ENV=development
-    command: npm start
+      - NODE_ENV=production
+    volumes:
+      - /app/data:/app/db # Ajusta según tu ruta real
+    restart: always
