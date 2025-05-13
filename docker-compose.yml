@@ -7,5 +7,5 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - /app/data:/app/db # Ajusta según tu ruta real
+        - ./db:/app/db
     restart: always
