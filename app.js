@@ -13,6 +13,7 @@ const session = require('express-session');
 const rateLimiter = require('./middlewares/rateLimiter'); 
 const app = express();
 const JWT_SECRET = process.env.JWT_SECRET
+const SQLiteStore = require('connect-sqlite3')(session);
 
 // Middleware
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use(cors({
 }));
 // Configurar el middleware de sesión
 app.use(session({
+    store: new SQLiteStore({ db: 'sessions.sqlite', dir: './db' }),
     secret: process.env.SESSION_SECRET || JWT_SECRET, // Cambia esto por una cadena segura
     resave: false, // No guardar la sesión si no hay cambios
     saveUninitialized: false, // No guardar sesiones vacías
