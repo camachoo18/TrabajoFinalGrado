@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="/html/index.html">AgendifyNow</a>
+        </div>
+        <div class="navbar-menu">
+            <span id="userEmailDisplay" class="navbar-item">Cargando...</span>
+            <button id="navbarLogoutButton" class="navbar-item nav-button">Cerrar Sesión</button>
+        </div>
+    </nav>
     <div class="container">
         <h1>Bienvenido a la Agenda de Contactos</h1>
         
@@ -15,7 +24,7 @@
             <a href="/html/add-contact.html" class="nav-button">Agregar Nuevo Contacto</a>
             <a href="/html/view-contacts.html" class="nav-button">Ver Contactos</a>
             <a href="/html/plans.html" class="nav-button">Elige tu Plan</a> <!-- Nuevo botón -->
-            <button id="logoutButton" class="nav-button">Cerrar Sesión</button>
+           
         </div>
 
         
@@ -29,14 +38,48 @@
     <!-- Scripts -->
     <script src="/js/auth.js"></script>
     <script>
-        // Verificar si el usuario está autenticado al cargar la página
         document.getElementById('viewApiKeyButton').addEventListener('click', fetchApiKey);
         document.getElementById('regenerateApiKeyButton').addEventListener('click', regenerateApiKey);
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => { 
+        const emailDisplay = document.getElementById('userEmailDisplay');
+        const navbarLogoutBtn = document.getElementById('navbarLogoutButton'); 
 
-        // Redirigir a logout.html al hacer clic en el botón de cerrar sesión
-        document.getElementById('logoutButton').addEventListener('click', () => {
-            window.location.href = '/html/logout.html';
-        });
+        try {
+            const authResponse = await fetch('/auth/isAuthenticated', { credentials: 'include' });
+
+            if (authResponse.ok) {
+                const authData = await authResponse.json();
+
+                if (authData.authenticated) { 
+                    if (authData.user && authData.user.username) {
+                        if (emailDisplay) emailDisplay.textContent = authData.user.username;
+                    } else {
+                        const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
+                        if (userInfoResponse.ok) {
+                            const userInfo = await userInfoResponse.json();
+                            if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario';
+                        } else {
+                            if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
+                        }
+                    }
+                } else {
+                    if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                }
+            } else {
+                if (emailDisplay) emailDisplay.textContent = 'Invitado';
+            }
+        } catch (error) {
+            if (emailDisplay) emailDisplay.textContent = 'Error';
+        }
+
+        if (navbarLogoutBtn) {
+            navbarLogoutBtn.addEventListener('click', () => {
+                window.location.href = '/html/logout.html';
+            });
+        }
+    });
     </script>
 </body>
 </html>

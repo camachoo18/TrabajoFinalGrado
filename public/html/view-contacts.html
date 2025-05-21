@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="/html/index.html">AgendifyNow</a>
+        </div>
+        <div class="navbar-menu">
+            <span id="userEmailDisplay" class="navbar-item">Cargando...</span>
+            <button id="navbarLogoutButton" class="navbar-item nav-button">Cerrar Sesión</button>
+        </div>
+    </nav>
     <div class="contacts-container">
         <h1>Lista de Contactos</h1>
         
@@ -69,13 +78,52 @@
         </div>
     </div>
 
-
     <!-- Cargar los archivos JavaScript -->
     <script src="/js/categoryManager.js" defer></script> <!-- Para cargar categorías -->
     <script src="/js/contactManager.js" defer></script> <!-- Para CRUD -->
     <script src="/js/filterManager.js" defer></script> <!-- Para búsqueda -->
     <script src="/js/uiHelper.js" defer></script> <!-- Para feedback y renderizado -->
     <script src="/js/viewContacts.js" defer></script> <!-- Manejo específico de la vista de contactos -->
-    <script src="/js/downloadManager.js" defer></script> <!-- Para descargar contactos en CSV -->
+    <script src="/js/downloadManager.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const emailDisplay = document.getElementById('userEmailDisplay');
+        const navbarLogoutBtn = document.getElementById('navbarLogoutButton'); // Ensure this is the ID from HTML
+
+        try {
+            const authResponse = await fetch('/auth/isAuthenticated', { credentials: 'include' });
+
+            if (authResponse.ok) {
+                const authData = await authResponse.json();
+
+                if (authData.authenticated) { 
+                    if (authData.user && authData.user.username) {
+                        if (emailDisplay) emailDisplay.textContent = authData.user.username;
+                    } else {
+                        const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
+                        if (userInfoResponse.ok) {
+                            const userInfo = await userInfoResponse.json();
+                            if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario';
+                        } else {
+                            if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
+                        }
+                    }
+                } else {
+                    if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                }
+            } else {
+                if (emailDisplay) emailDisplay.textContent = 'Invitado';
+            }
+        } catch (error) {
+            if (emailDisplay) emailDisplay.textContent = 'Error';
+        }
+
+        if (navbarLogoutBtn) {
+            navbarLogoutBtn.addEventListener('click', () => {
+                window.location.href = '/html/logout.html';
+            });
+        }
+    });
+    </script>
 </body>
 </html>

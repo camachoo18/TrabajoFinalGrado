@@ -124,10 +124,16 @@ app.post('/google/import-contacts', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/auth/userinfo', authenticateToken, (req, res) => {
+    // El username está en req.user.username gracias al JWT
+    res.json({ username: req.user.username });
+});
+
 // Ruta de fallback para SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public','html', 'index.html'));
 });
+
 
 // Middleware para manejar errores
 app.use((err, req, res, next) => {

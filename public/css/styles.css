@@ -1,17 +1,19 @@
 /* Estilos generales */
 body {
     font-family: 'Roboto', Arial, sans-serif;
-    background: linear-gradient(135deg, #4CAF50, #007bff);
-    color: #fff;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    
+    background: linear-gradient(135deg, #4CAF50, #007bff); /* Default gradient */
+    color: #fff; /* Default text color */
+    margin: 0; /* Removes default margin */
+    padding: 0; /* Reset padding, will add specific padding-top below */
+    display: flex; /* ADDED */
+    flex-direction: column; /* ADDED */
+    justify-content: center; /* ADDED - for vertical centering */
+    align-items: center;   /* ADDED - for horizontal centering */
+    min-height: 100vh;     /* ADDED */
+    padding-top: 70px;     /* ADDED - space for fixed navbar */
+    box-sizing: border-box;/* ADDED - padding included in height */
 }
+
 /* Contenedor de contactos */
 .contacts-container {
     text-align: center;
@@ -103,7 +105,7 @@ h1 {
 }
 
 
-/* Navegación */
+/* Original/Previous .navigation styles (state before Step 64 improvements) */
 .navigation {
     display: flex;
     justify-content: center;
@@ -111,7 +113,8 @@ h1 {
     margin-top: 20px;
 }
 
-.nav-button, .secondary-button {
+/* Original/Previous .nav-button styles (state before Step 66 consolidation) */
+.nav-button, .secondary-button { 
     background-color: #007bff;
     color: white;
     padding: 12px 20px;
@@ -134,6 +137,18 @@ h1 {
 .nav-button:active, .secondary-button:active {
     transform: scale(0.98);
 }
+
+/* Basic styling for #apiKeySection (removing flex I added) */
+#apiKeySection {
+    margin-top: 20px; 
+    display: flex; /* Added for flexbox centering */
+    justify-content: center; /* Added for horizontal centering of buttons */
+    align-items: center; /* Added for vertical alignment if buttons have different heights */
+    gap: 15px; /* Added for spacing between buttons, adjust as needed */
+}
+
+/* Navegación y Sección API Key - REVISADAS Y CONSOLIDADAS */
+/* Removed container-like styles for .navigation and #apiKeySection */
 
 /* Botones principales */
 .primary-button {
@@ -414,4 +429,71 @@ td.actions {
     justify-content: center;
     gap: 10px; /* Espaciado entre botones */
 }
+} /* ADDED: Closing brace for @media (max-width: 480px) */
+
+/* Navbar styles */
+.navbar {
+    background-color: #343a40; /* Dark background color */
+    padding: 0.8rem 1.5rem; /* Vertical and horizontal padding */
+    display: flex !important; /* For items INSIDE the navbar */
+    flex-direction: row !important; /* ADDED */
+    justify-content: space-between !important; /* Pushes brand to left and menu to right */
+    align-items: center !important; /* Vertically aligns items in the center */
+    border-bottom: 2px solid #007bff; /* Accent color border */
+    color: #ffffff; /* Default text color for navbar items */
+    width: 100%; /* Ensure it spans full width */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    position: fixed; /* Make it a fixed navbar at the top */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Ensure it's above other content */
 }
+
+.navbar-brand a {
+    color: #ffffff; /* White color for the brand name */
+    text-decoration: none; /* Removes underline from link */
+    font-size: 1.75em; /* Larger font size for brand */
+    font-weight: bold; /* Makes brand name bold */
+}
+
+.navbar-menu {
+    display: flex; /* Allows items to sit side-by-side */
+    align-items: center; /* Vertically aligns items in the center */
+}
+
+.navbar-item {
+    margin-left: 20px; /* Spacing between navbar items */
+    color: #f8f9fa; /* Light color for text items like email */
+    font-size: 1em;
+}
+
+/* Styling for the logout button in navbar */
+.navbar .nav-button,
+#navbarLogoutButton { /* Or specific ID styling */
+    background-color: #007bff; /* Primary button color */
+    color: white;
+    border: none;
+    padding: 0.5em 1em;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.9em;
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.navbar .nav-button:hover,
+#navbarLogoutButton:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+/* Adjust main content to account for fixed navbar */
+/* Apply to direct children of body that are main content containers */
+/* The following ruleset was removed as it became empty:
+body > .container,
+body > .contacts-container {
+}
+*/
+
+/* Additional global styles or utility classes can go here */
