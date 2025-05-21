@@ -16,9 +16,9 @@ async function filterContactsByCategory(categoria) {
 
         if (response.ok) {
             const contacts = await response.json();
-            renderContacts(contacts); // Renderizar los contactos filtrados
+            displayContacts(contacts); // Renderizar los contactos filtrados
         } else if (response.status === 404) {
-            renderContacts([]); // Mostrar mensaje de "No se encontraron contactos"
+            displayContacts([]); // Mostrar mensaje de "No se encontraron contactos"
         } else {
             throw new Error('Error al filtrar contactos');
         }

@@ -1,12 +1,3 @@
-// Función para mostrar feedback
-function showFeedback(message, success = true) {
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
-}
-
 // Función para cargar categorías desde el servidor
 async function loadCategories() {
     try {
@@ -22,7 +13,7 @@ async function loadCategories() {
         renderCategories(categories); // Renderizar las categorías en el DOM
     } catch (error) {
         console.error('Error al cargar categorías:', error);
-        showFeedback('Error al cargar categorías', false);
+        // showFeedback('Error al cargar categorías', false);
     }
 }
 
@@ -72,10 +63,10 @@ async function addCategory(categoryData) {
         }
 
         await loadCategories(); // Recargar categorías después de agregar
-        showFeedback('Categoría agregada exitosamente');
+        // showFeedback('Categoría agregada exitosamente');
     } catch (error) {
         console.error('Error al agregar categoría:', error);
-        showFeedback('Error al agregar categoría', false);
+        // showFeedback('Error al agregar categoría', false);
     }
 }
 
@@ -94,10 +85,10 @@ async function updateCategory(id, categoryData) {
         }
 
         await loadCategories(); // Recargar categorías después de actualizar
-        showFeedback('Categoría actualizada exitosamente');
+        // showFeedback('Categoría actualizada exitosamente');
     } catch (error) {
         console.error('Error al actualizar categoría:', error);
-        showFeedback('Error al actualizar categoría', false);
+        // showFeedback('Error al actualizar categoría', false);
     }
 }
 
@@ -114,10 +105,10 @@ async function deleteCategory(id) {
         }
 
         await loadCategories(); // Recargar categorías después de eliminar
-        showFeedback('Categoría eliminada exitosamente');
+        // showFeedback('Categoría eliminada exitosamente');
     } catch (error) {
         console.error('Error al eliminar categoría:', error);
-        showFeedback('Error al eliminar categoría', false);
+        // showFeedback('Error al eliminar categoría', false);
     }
 }
 

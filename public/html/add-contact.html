@@ -3,81 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agregar Contacto</title>
+    <title>Agregar Contacto - AgendifyNow</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    <!-- Nueva Navbar Estructura -->
     <nav class="navbar">
-        <div class="navbar-brand">
-            <a href="/html/index.html">AgendifyNow</a>
-        </div>
-        <div class="navbar-menu">
-            <span id="userEmailDisplay" class="navbar-item">Cargando...</span>
-            <button id="navbarLogoutButton" class="navbar-item nav-button">Cerrar Sesión</button>
+        <a href="/html/index.html" class="brand-title">AgendifyNow</a>
+        <div class="user-info">
+            <span id="userEmailDisplay">Cargando...</span>
+            <button id="navbarLogoutButton" class="nav-button">Cerrar Sesión</button>
         </div>
     </nav>
-    <div class="container">
-        <h1>Agregar Nuevo Contacto</h1>
-        
-        
 
-        <!-- Formulario para agregar contacto -->
-        <form id="contactForm">
-            <input type="text" id="nombre" placeholder="Nombre" required minlength="2">
-            <input type="tel" id="telefono" placeholder="Teléfono" required pattern="[0-9]{9,11}" maxlength="11">
-            <input type="email" id="email" placeholder="Correo Electrónico" required>
-            <textarea id="notas" placeholder="Notas"></textarea>
+    <!-- Global Feedback Container for uiHelper.js -->
+    <div id="global-feedback" class="feedback-container-stack"></div>
+
+    <div class="main-container">
+        <div class="content-card">
+            <h1 class="mb-4">Agregar Nuevo Contacto</h1>
             
-            <label for="categoria">Categoría:</label>
-            <select id="categoria" name="categoria" required>
-                <option value="Trabajo">Trabajo</option>
-                <option value="Amigos">Amigos</option>
-                <option value="Familia">Familia</option>
-                <option value="Sin Categoría">Sin Categoría</option>
-                <option value="Otra">Otra</option>
-            </select>
-            <input type="text" id="nuevaCategoria" placeholder="Nueva Categoría" style="display: none;">
-            <button type="submit" class="primary-button">Agregar Contacto</button>
-        </form>
-        
-        <!-- Navegación hacia la vista de contactos -->
-        <div class="navigation">
-            <a href="view-contacts.html" class="secondary-button">Ver Contactos</a>
-            <button id="logoutButton" class="secondary-button">Cerrar Sesión</button>
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" id="nombre" class="form-control" placeholder="Nombre del contacto" required minlength="2">
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" class="form-control" placeholder="Ej: 123456789" required pattern="[0-9]{9,11}" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" class="form-control" placeholder="ejemplo@correo.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="notas">Notas</label>
+                    <textarea id="notas" class="form-control" placeholder="Anotaciones adicionales"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Categoría</label>
+                    <select id="categoria" name="categoria" class="form-control" required>
+                        <option value="" disabled selected>Selecciona una categoría</option> <!-- Default placeholder -->
+                        <option value="Trabajo">Trabajo</option>
+                        <option value="Amigos">Amigos</option>
+                        <option value="Familia">Familia</option>
+                        <option value="Sin Categoría">Sin Categoría</option>
+                        <option value="Otra">Otra</option>
+                    </select>
+                </div>
+                <div class="form-group" id="nuevaCategoriaGroup" style="display: none;"> <!-- Initially hidden, controlled by JS -->
+                    <label for="nuevaCategoria">Nombre de la Nueva Categoría</label>
+                    <input type="text" id="nuevaCategoria" class="form-control" placeholder="Escribe el nombre de la nueva categoría">
+                </div>
+                
+                <div class="button-group mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Agregar Contacto</button>
+                    <a href="/html/view-contacts.html" class="btn btn-secondary btn-lg">Ver Contactos</a>
+                </div>
+            </form>
         </div>
     </div>
+
     <script>
-        // Verificar si el usuario está autenticado al cargar la página y manejar navbar
         document.addEventListener('DOMContentLoaded', async () => {
             const emailDisplay = document.getElementById('userEmailDisplay');
-            const navbarLogoutBtn = document.getElementById('navbarLogoutButton'); // Ensure this is the ID from HTML
+            const navbarLogoutBtn = document.getElementById('navbarLogoutButton');
 
             try {
                 const authResponse = await fetch('/auth/isAuthenticated', { credentials: 'include' });
-
                 if (authResponse.ok) {
                     const authData = await authResponse.json();
-
-                    if (authData.authenticated) { 
-                        if (authData.user && authData.user.username) {
-                            if (emailDisplay) emailDisplay.textContent = authData.user.username;
-                        } else {
-                            const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
-                            if (userInfoResponse.ok) {
-                                const userInfo = await userInfoResponse.json();
-                                if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario';
-                            } else {
-                                if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
-                            }
+                    if (authData.authenticated && authData.user && authData.user.username) {
+                        if (emailDisplay) emailDisplay.textContent = authData.user.username;
+                    } else if (authData.authenticated) {
+                        // Fallback if username isn't directly in authData.user but user is authenticated
+                        const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
+                        if (userInfoResponse.ok) {
+                            const userInfo = await userInfoResponse.json();
+                            if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario Autenticado';
+                        }
+                         else {
+                            if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
                         }
                     } else {
                         if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                        // Optionally redirect to login if not authenticated for this page
+                        // window.location.href = '/html/login.html'; 
                     }
                 } else {
-                    if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                    if (emailDisplay) emailDisplay.textContent = 'Invitado (Error Auth)';
+                    // window.location.href = '/html/login.html'; 
                 }
             } catch (error) {
-                if (emailDisplay) emailDisplay.textContent = 'Error';
+                console.error('Error de autenticación:', error);
+                if (emailDisplay) emailDisplay.textContent = 'Error de Conexión';
+                // window.location.href = '/html/login.html'; 
             }
 
             if (navbarLogoutBtn) {
@@ -85,51 +105,24 @@
                     window.location.href = '/html/logout.html';
                 });
             }
-
-            // Funcionalidad del botón de logout original de la página (si se decide mantener)
-            const pageLogoutButton = document.getElementById('logoutButton'); // Asegúrate que el ID es correcto
-            if(pageLogoutButton){
-                pageLogoutButton.addEventListener('click', () => {
-                    window.location.href = '/html/logout.html';
-                });
-            }
         });
+
+        // Scripts for page functionality (categoryManager, contactManager, etc.)
+        // These would typically be loaded via <script src="..."></script> 
+        
     </script>
     <!-- Cargar los archivos JavaScript correspondientes -->
-    <script src="/js/categoryManager.js"></script> <!-- Para cargar categorías -->
-    <script src="/js/contactManager.js"></script> <!-- Para CRUD (si addContact no está aquí) -->
-    <script src="/js/filterManager.js"></script>
+    <script src="/js/uiHelper.js"></script> <!-- Load uiHelper FIRST -->
+    <script src="/js/categoryManager.js"></script>
+    <script src="/js/contactManager.js"></script> 
+    <!-- filterManager.js might not be needed on add-contact page, assess its role -->
+    <!-- <script src="/js/filterManager.js"></script> -->
     <script>
-        // Definición de addContact separada para mayor claridad
-        async function addContact(contactData) {
-            try {
-                const response = await fetch('/contacts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify(contactData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Error al agregar contacto');
-                }
-                
-                // Asumiendo que showFeedback es una función global o importada
-                showFeedback('Contacto agregado exitosamente'); 
-                setTimeout(() => {
-                    window.location.href = '/html/view-contacts.html';
-                }, 2000);
-            } catch (error) {
-                console.error('Error en addContact:', error);
-                showFeedback('Error al agregar contacto', false);
-            }
-        }
-
-        // Lógica del formulario de contacto (si no está en contactManager.js)
+        // Form submission and dynamic category logic (adapted from original)
         const contactForm = document.getElementById('contactForm');
         if (contactForm) {
             contactForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevenir el envío tradicional del formulario
+                event.preventDefault();
                 const nombre = document.getElementById('nombre').value;
                 const telefono = document.getElementById('telefono').value;
                 const email = document.getElementById('email').value;
@@ -137,32 +130,73 @@
                 const categoriaSelect = document.getElementById('categoria');
                 let categoria = categoriaSelect.value;
                 const nuevaCategoriaInput = document.getElementById('nuevaCategoria');
+                const nuevaCategoriaGroup = document.getElementById('nuevaCategoriaGroup');
 
                 if (categoria === 'Otra' && nuevaCategoriaInput.value.trim() !== '') {
                     categoria = nuevaCategoriaInput.value.trim();
+                } else if (categoria === 'Otra' && nuevaCategoriaInput.value.trim() === '') {
+                    showFeedback('Por favor, especifica el nombre de la nueva categoría.', 'warning'); 
+                    return; // Prevent submission if 'Otra' is selected but field is empty
+                }
+                if (categoria === '' || categoria === null) {
+                    showFeedback('Por favor, selecciona una categoría.', 'warning');
+                    return; // Prevent submission if no category is selected
                 }
 
                 const contactData = { nombre, telefono, email, notas, categoria };
-                await addContact(contactData);
-            });
-        }
+                
+                // Assuming addContact is globally available from contactManager.js or defined elsewhere
+                // If addContact is defined in contactManager.js and handles its own feedback, adjust here.
+                try {
+                    // Optional: show loading feedback if addContact is long
+                    // showFeedback('Agregando contacto...', 'loading', 'global-feedback', 0);
 
-        // Manejo de la categoría "Otra"
-        const categoriaSelect = document.getElementById('categoria');
-        const nuevaCategoriaInput = document.getElementById('nuevaCategoria');
-        if (categoriaSelect && nuevaCategoriaInput) {
-            categoriaSelect.addEventListener('change', function() {
-                if (this.value === 'Otra') {
-                    nuevaCategoriaInput.style.display = 'block';
-                    nuevaCategoriaInput.required = true;
-                } else {
-                    nuevaCategoriaInput.style.display = 'none';
-                    nuevaCategoriaInput.required = false;
-                    nuevaCategoriaInput.value = ''; // Limpiar el campo si se cambia de "Otra"
+                    const response = await fetch('/contacts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(contactData)
+                    });
+                    
+                    const responseData = await response.json(); // Always try to parse JSON
+
+                    if (!response.ok) {
+                        // Use message from server if available, otherwise a generic error
+                        throw new Error(responseData.message || 'Error al agregar contacto');
+                    }
+                    
+                    console.log('DEBUG: About to call showFeedback from add-contact.html. Function definition:', showFeedback);
+                    showFeedback(`Contacto "${nombre}" añadido correctamente.`, 'success'); 
+                    contactForm.reset(); // Reset form on success
+                    if (nuevaCategoriaGroup) nuevaCategoriaGroup.style.display = 'none'; // Hide 'Otra' field
+                    // Optional: Redirect after a delay
+                    // setTimeout(() => {
+                    //    window.location.href = '/html/view-contacts.html';
+                    // }, 2000);
+                } catch (error) {
+                    console.error('Error en addContact:', error);
+                    console.log('DEBUG: About to call showFeedback for error from add-contact.html. Function definition:', showFeedback);
+                    showFeedback(error.message || 'Error al procesar la solicitud', 'error');
                 }
             });
         }
 
+        const categoriaSelect = document.getElementById('categoria');
+        const nuevaCategoriaGroup = document.getElementById('nuevaCategoriaGroup');
+        const nuevaCategoriaInput = document.getElementById('nuevaCategoria');
+
+        if (categoriaSelect && nuevaCategoriaGroup && nuevaCategoriaInput) {
+            categoriaSelect.addEventListener('change', function() {
+                if (this.value === 'Otra') {
+                    nuevaCategoriaGroup.style.display = 'block';
+                    nuevaCategoriaInput.required = true;
+                } else {
+                    nuevaCategoriaGroup.style.display = 'none';
+                    nuevaCategoriaInput.required = false;
+                    nuevaCategoriaInput.value = '';
+                }
+            });
+        }
     </script>
 </body>
 </html>

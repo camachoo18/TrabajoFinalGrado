@@ -3,39 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda de Contactos</title>
+    <title>Agenda de Contactos - AgendifyNow</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand">
-            <a href="/html/index.html">AgendifyNow</a>
-        </div>
-        <div class="navbar-menu">
-            <span id="userEmailDisplay" class="navbar-item">Cargando...</span>
-            <button id="navbarLogoutButton" class="navbar-item nav-button">Cerrar Sesión</button>
+        <a href="/html/index.html" class="brand-title">AgendifyNow</a>
+        <div class="user-info">
+            <span id="userEmailDisplay">Cargando...</span>
+            <button id="navbarLogoutButton" class="nav-button">Cerrar Sesión</button>
         </div>
     </nav>
-    <div class="container">
-        <h1>Bienvenido a la Agenda de Contactos</h1>
-        
-        <!-- Navegación para las diferentes secciones -->
-        <div class="navigation">
-            <a href="/html/add-contact.html" class="nav-button">Agregar Nuevo Contacto</a>
-            <a href="/html/view-contacts.html" class="nav-button">Ver Contactos</a>
-            <a href="/html/plans.html" class="nav-button">Elige tu Plan</a> <!-- Nuevo botón -->
-           
+
+    <div class="main-container">
+        <div class="content-card text-center">
+            <h1>Bienvenido a AgendifyNow</h1>
+            <p class="text-secondary mb-4">Gestiona tus contactos y API keys de forma sencilla.</p>
+            
+            <div class="button-group mb-4">
+                <a href="/html/add-contact.html" class="btn btn-lg">Agregar Contacto</a>
+                <a href="/html/view-contacts.html" class="btn btn-lg">Ver Contactos</a>
+                <a href="/html/plans.html" class="btn btn-lg btn-secondary">Elige tu Plan</a>
+            </div>
         </div>
 
-        
-        <div id="apiKeySection" style="margin-top: 20px;">
-            <div id="apiKeyDisplay"></div>
-            <button id="viewApiKeyButton" class="nav-button">Ver APIKEY</button>
-            <button id="regenerateApiKeyButton" class="nav-button">Regenerar APIKEY</button>
+        <div class="content-card text-center" id="apiKeyManagementSection">
+            <h2>Gestión de API Key</h2>
+            <div id="apiKeyDisplay" class="mb-3" style="min-height: 40px; background-color: var(--background-main); padding: 10px; border-radius: var(--border-radius); border: 1px solid var(--border-color); word-break: break-all;"></div>
+            <div class="button-group">
+                <button id="viewApiKeyButton" class="btn">Ver API Key</button>
+                <button id="regenerateApiKeyButton" class="btn btn-secondary">Regenerar API Key</button>
+            </div>
         </div>
     </div>
     
-    <!-- Scripts -->
     <script src="/js/auth.js"></script>
     <script>
         document.getElementById('viewApiKeyButton').addEventListener('click', fetchApiKey);

@@ -1,12 +1,3 @@
-// Función para mostrar feedback
-function showFeedback(message, success = true) {
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
-}
-
 // Función para cargar las categorías en los selects
 function loadCategories() {
     // Obtener los selects de categoría
@@ -54,13 +45,13 @@ async function addCategory(name) {
         });
 
         if (response.ok) {
-            showFeedback(`Categoría "${name}" añadida correctamente`);
+            //showFeedback(`Categoría "${name}" añadida correctamente`);
             loadCategories('categoria'); // Recargar categorías
         } else {
-            showFeedback('Error al añadir categoría', false);
+            //showFeedback('Error al añadir categoría', false);
         }
     } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        //showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 
@@ -81,7 +72,7 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
 
     // Verificar duplicados por teléfono
     if (await isDuplicatePhone(telefono)) {
-        showFeedback('El número de teléfono ya está registrado.', false);
+        //showFeedback('El número de teléfono ya está registrado.', false);
         return;
     }
 
@@ -106,11 +97,11 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
     // Manejar respuesta
     if (response.ok) {
         loadContacts(); // Recargar lista de contactos
-        showFeedback(`Contacto "${contact.nombre}" añadido correctamente`);
+        //showFeedback(`Contacto "${contact.nombre}" añadido correctamente`);
     } else {
         const responseBody = await response.json();
         console.error('Error al agregar contacto:', responseBody);
-        showFeedback(responseBody.error || 'Error al agregar contacto', false);
+        //showFeedback(responseBody.error || 'Error al agregar contacto', false);
     }
 });
 
@@ -173,10 +164,10 @@ async function loadContacts() {
             const contacts = await response.json();
             renderContacts(contacts);
         } else {
-            showFeedback('Error al cargar contactos', false);
+            //showFeedback('Error al cargar contactos', false);
         }
     } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        //showFeedback(`Error de conexión: ${err.message}`, false);
     }
 }
 
@@ -194,10 +185,10 @@ document.getElementById('filtroCategoria').addEventListener('change', async (eve
 
             renderContacts(contacts); // Renderizar solo los contactos filtrados
         } else {
-            showFeedback('Error al filtrar contactos', false);
+            //showFeedback('Error al filtrar contactos', false);
         }
     } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        //showFeedback(`Error de conexión: ${err.message}`, false);
     }
 });
 
@@ -233,14 +224,14 @@ function toggleEditMode(row, id) {
 
         // Validar que los campos no estén vacíos
         if (!updatedContact.nombre || !updatedContact.telefono || !updatedContact.email) {
-            showFeedback('Los campos de nombre, teléfono y correo son obligatorios.', false);
+            //showFeedback('Los campos de nombre, teléfono y correo son obligatorios.', false);
             return;  // No guardar si hay campos vacíos
         }
 
         // Validación del correo
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!emailRegex.test(updatedContact.email)) {
-            showFeedback('El correo electrónico debe tener el formato correcto: ejemplo@dominio.com.', false);
+            //showFeedback('El correo electrónico debe tener el formato correcto: ejemplo@dominio.com.', false);
             return;  // No guardar si el correo no es válido
         }
 
@@ -278,13 +269,13 @@ async function saveContact(id, updatedContact, row) {
 
             row.querySelector('.edit').textContent = 'Editar';
             row.classList.remove('editing');
-            showFeedback('Contacto actualizado correctamente');
+            //showFeedback('Contacto actualizado correctamente');
         } else {
             const error = await response.json();
-            showFeedback(error.message || 'Error al actualizar el contacto', false);
+            //showFeedback(error.message || 'Error al actualizar el contacto', false);
         }
     } catch (err) {
-        showFeedback(`Error al guardar contacto: ${err.message}`, false);
+        //showFeedback(`Error al guardar contacto: ${err.message}`, false);
     }
 }
 
@@ -303,9 +294,9 @@ async function deleteContact(id) {
     const response = await fetch(`/delete/${id}`, { method: 'DELETE' });
     if (response.ok) {
         loadContacts();
-        showFeedback('Contacto eliminado correctamente');
+        //showFeedback('Contacto eliminado correctamente');
     } else {
-        showFeedback('Error al eliminar contacto', false);
+        //showFeedback('Error al eliminar contacto', false);
     }
 }
 
@@ -326,7 +317,7 @@ async function editContact(id) {
         document.getElementById('contactForm').style.display = 'none';
         document.getElementById('editForm').style.display = 'block';
     } else {
-        showFeedback('Error al cargar datos del contacto', false);
+        //showFeedback('Error al cargar datos del contacto', false);
     }
 }
 
@@ -350,12 +341,12 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
 
     if (response.ok) {
         loadContacts(); // Recargar la lista de contactos
-        showFeedback('Contacto actualizado correctamente'); // Mostrar mensaje de éxito
+        //showFeedback('Contacto actualizado correctamente'); // Mostrar mensaje de éxito
         document.getElementById('editForm').style.display = 'none'; // Ocultar el formulario de edición
         document.getElementById('contactForm').style.display = 'block'; // Mostrar el formulario de agregar
     } else {
         const responseBody = await response.json();
-        showFeedback(responseBody.error || 'Error al actualizar contacto', false); // Mostrar mensaje de error
+        //showFeedback(responseBody.error || 'Error al actualizar contacto', false); // Mostrar mensaje de error
     }
 });
 
@@ -410,10 +401,10 @@ document.getElementById('searchInput')?.addEventListener('input', async (e) => {
                 });
             }
         } else {
-            showFeedback('Error al buscar contactos', false);
+            //showFeedback('Error al buscar contactos', false);
         }
     } catch (err) {
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        //showFeedback(`Error de conexión: ${err.message}`, false);
     }
 });
 
@@ -428,5 +419,84 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('filtroCategoria') || document.querySelector('#contactList tbody')) {
         loadCategories('filtroCategoria'); // Carga las categorías para el filtro
         loadContacts(); // Carga los contactos en la tabla
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const currentYear = new Date().getFullYear();
+    const footerText = ` ${currentYear} AgendifyNow. Todos los derechos reservados.`;
+    const footerElement = document.querySelector('footer p');
+    if (footerElement) {
+        footerElement.textContent = footerText;
+    }
+
+    // Attach event listeners for nav links if they exist
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Example: Smooth scroll or other SPA-like behavior could be added here
+            // For now, just standard navigation
+            console.log(`Navigating to ${link.href}`);
+        });
+    });
+
+    // Check auth status and update UI (e.g., for index.html or other general pages)
+    // This is a simplified example; actual auth logic might be more complex
+    // and likely handled by auth.js or specific page scripts.
+    updateAuthUI(); 
+
+});
+
+async function updateAuthUI() {
+    try {
+        const response = await fetch('/auth/isAuthenticated', { credentials: 'include' });
+        if (response.ok) {
+            const data = await response.json();
+            const userEmailDisplay = document.getElementById('userEmailDisplay');
+            const navbarLogoutButton = document.getElementById('navbarLogoutButton');
+            const loginLink = document.getElementById('loginLink'); // Assuming an ID for login link
+            const registerLink = document.getElementById('registerLink'); // Assuming an ID for register link
+            const viewContactsLink = document.getElementById('viewContactsLink'); // Assuming an ID for view contacts link
+
+            if (data.authenticated) {
+                if (userEmailDisplay) userEmailDisplay.textContent = data.user?.username || 'Usuario';
+                if (navbarLogoutButton) navbarLogoutButton.style.display = 'inline-block';
+                if (viewContactsLink) viewContactsLink.style.display = 'inline-block'; // Show if auth
+                if (loginLink) loginLink.style.display = 'none'; // Hide if auth
+                if (registerLink) registerLink.style.display = 'none'; // Hide if auth
+            } else {
+                if (userEmailDisplay) userEmailDisplay.textContent = 'Invitado';
+                if (navbarLogoutButton) navbarLogoutButton.style.display = 'none';
+                if (viewContactsLink) viewContactsLink.style.display = 'none'; // Hide if not auth
+                if (loginLink) loginLink.style.display = 'inline-block'; // Show if not auth
+                if (registerLink) registerLink.style.display = 'inline-block'; // Show if not auth
+            }
+        } else {
+            console.log('Auth check failed, assuming not authenticated for UI purposes.');
+            // Handle UI for non-authenticated state on error
+            const userEmailDisplay = document.getElementById('userEmailDisplay');
+            const navbarLogoutButton = document.getElementById('navbarLogoutButton');
+            if (userEmailDisplay) userEmailDisplay.textContent = 'Invitado';
+            if (navbarLogoutButton) navbarLogoutButton.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error updating auth UI:', error);
+        // Fallback UI state
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const navbarLogoutButton = document.getElementById('navbarLogoutButton');
+        if (userEmailDisplay) userEmailDisplay.textContent = 'Invitado (Error)';
+        if (navbarLogoutButton) navbarLogoutButton.style.display = 'none';
+    }
+}
+
+// Ensure the logout button on the navbar works if present on the page
+// This might be redundant if pages like add-contact.html handle it specifically
+// but good for a general script.js if the navbar is consistent.
+document.addEventListener('DOMContentLoaded', () => {
+    const logoutButton = document.getElementById('navbarLogoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            window.location.href = '/html/logout.html'; 
+        });
     }
 });

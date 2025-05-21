@@ -3,55 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elige tu Plan</title>
+    <title>Elige tu Plan - AgendifyNow</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Elige tu Plan</h1>
-        <div class="plans">
-            <!-- Plan Gratuito -->
-            <div class="plan">
-                <h2>Gratuito</h2>
-                <p>Precio: 0€/mes</p>
-                <ul>
-                    <li>Gestión de contactos</li>
-                    <li>Búsqueda avanzada</li>
-                </ul>
-                <button class="primary-button" onclick="showComingSoon()">Seleccionar</button>
-            </div>
-
-            <!-- Plan Premium -->
-            <div class="plan">
-                <h2>Premium</h2>
-                <p>Precio: 9.99€/mes</p>
-                <ul>
-                    <li>Gestión de contactos</li>
-                    <li>Búsqueda avanzada</li>
-                    <li>Importar contactos de Google</li>
-                </ul>
-                <button class="primary-button" onclick="showComingSoon()">Seleccionar</button>
-            </div>
-
-            <!-- Plan VIP -->
-            <div class="plan">
-                <h2>VIP</h2>
-                <p>Precio: 19.99€/mes</p>
-                <ul>
-                    <li>Gestión de contactos</li>
-                    <li>Búsqueda avanzada</li>
-                    <li>Importar contactos de Google</li>
-                    <li>Soporte prioritario</li>
-                </ul>
-                <button class="primary-button" onclick="showComingSoon()">Seleccionar</button>
-            </div>
+    <!-- Nueva Navbar Estructura -->
+    <nav class="navbar">
+        <a href="/html/index.html" class="brand-title">AgendifyNow</a>
+        <div class="user-info">
+            <span id="userEmailDisplay">Cargando...</span> 
+            <button id="navbarLogoutButton" class="nav-button">Cerrar Sesión</button>
         </div>
-        <a href="/html/index.html" class="secondary-button">Volver</a>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-card">
+            <h1 class="text-center mb-5">Elige tu Plan</h1>
+            <div class="plans-grid">
+                <!-- Plan Gratuito -->
+                <div class="plan-card">
+                    <h2>Gratuito</h2>
+                    <p class="price">0€/mes</p>
+                    <ul class="features">
+                        <li>Gestión de contactos</li>
+                        <li>Búsqueda avanzada</li>
+                    </ul>
+                    <button class="btn btn-primary w-100" onclick="showComingSoon()">Seleccionar</button>
+                </div>
+
+                <!-- Plan Premium -->
+                <div class="plan-card">
+                    <h2>Premium</h2>
+                    <p class="price">9.99€/mes</p>
+                    <ul class="features">
+                        <li>Gestión de contactos</li>
+                        <li>Búsqueda avanzada</li>
+                        <li>Importar contactos de Google</li>
+                    </ul>
+                    <button class="btn btn-primary w-100" onclick="showComingSoon()">Seleccionar</button>
+                </div>
+
+                <!-- Plan VIP -->
+                <div class="plan-card">
+                    <h2>VIP</h2>
+                    <p class="price">19.99€/mes</p>
+                    <ul class="features">
+                        <li>Gestión de contactos</li>
+                        <li>Búsqueda avanzada</li>
+                        <li>Importar contactos de Google</li>
+                        <li>Soporte prioritario</li>
+                    </ul>
+                    <button class="btn btn-primary w-100" onclick="showComingSoon()">Seleccionar</button>
+                </div>
+            </div>
+            <a href="/html/index.html" class="btn btn-outline-secondary mt-5 d-block mx-auto" style="max-width: 200px;">Volver</a>
+        </div>
     </div>
+
     <script>
         function showComingSoon() {
             alert("Próximamente...");
         }
+
+        // Script para manejar el nombre de usuario y el botón de logout en la navbar
+        document.addEventListener('DOMContentLoaded', async () => {
+            const emailDisplay = document.getElementById('userEmailDisplay');
+            const navbarLogoutBtn = document.getElementById('navbarLogoutButton');
+
+            try {
+                const authResponse = await fetch('/auth/isAuthenticated', { credentials: 'include' });
+                if (authResponse.ok) {
+                    const authData = await authResponse.json();
+                    if (authData.authenticated && authData.user && authData.user.username) {
+                        if (emailDisplay) emailDisplay.textContent = authData.user.username;
+                    } else if (authData.authenticated) {
+                        // Si está autenticado pero no hay username, intentar obtenerlo de userinfo
+                        const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
+                        if (userInfoResponse.ok) {
+                            const userInfo = await userInfoResponse.json();
+                            if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario Autenticado';
+                        } else {
+                            if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
+                        }
+                    } else {
+                        if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                        // Opcionalmente redirigir a login si no está autenticado y esta página lo requiere
+                        // window.location.href = '/html/login.html'; 
+                    }
+                } else {
+                    if (emailDisplay) emailDisplay.textContent = 'Invitado (Error Auth)';
+                    // Opcionalmente redirigir
+                    // window.location.href = '/html/login.html'; 
+                }
+            } catch (error) {
+                console.error('Error de autenticación:', error);
+                if (emailDisplay) emailDisplay.textContent = 'Error de Conexión';
+                // Opcionalmente redirigir
+                // window.location.href = '/html/login.html'; 
+            }
+
+            if (navbarLogoutBtn) {
+                navbarLogoutBtn.addEventListener('click', () => {
+                    window.location.href = '/html/logout.html';
+                });
+            }
+        });
     </script>
 </body>
 </html>

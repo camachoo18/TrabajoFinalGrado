@@ -3,119 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ver Contactos</title>
+    <title>Ver Contactos - AgendifyNow</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    <!-- Nueva Navbar Estructura -->
     <nav class="navbar">
-        <div class="navbar-brand">
-            <a href="/html/index.html">AgendifyNow</a>
-        </div>
-        <div class="navbar-menu">
-            <span id="userEmailDisplay" class="navbar-item">Cargando...</span>
-            <button id="navbarLogoutButton" class="navbar-item nav-button">Cerrar Sesión</button>
+        <a href="/html/index.html" class="brand-title">AgendifyNow</a>
+        <div class="user-info">
+            <span id="userEmailDisplay">Cargando...</span>
+            <button id="navbarLogoutButton" class="nav-button">Cerrar Sesión</button>
         </div>
     </nav>
-    <div class="contacts-container">
-        <h1>Lista de Contactos</h1>
-        
-        <!-- Filtro de contactos -->
-        <div id="searchBar">
-            <input type="text" id="searchInput" placeholder="Buscar contactos...">
-        </div>
-        <div id="categoryFilter">
-            <label for="filtroCategoria">Filtrar por categoría:</label>
-            <select id="filtroCategoria">
-                <option value="">Todas las categorías</option>
-                <option value="Amigos">Amigos</option>
-                <option value="Familia">Familia</option>
-                <option value="Trabajo">Trabajo</option>
-                <option value="Sin categoría">Sin categoría</option>
-                <option value="Otra">Otra</option>
-            </select>
-        </div>
-        <!-- Botón para descargar contactos en formato CSV -->
-        <button id="downloadCsvButton" class="primary-button">Descargar CSV</button>
-        <!-- Tabla para mostrar los contactos -->
-        <table id="contactList">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th>Categoría</th> 
-                    <th>Notas</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="contactsTableBody">
-                <!-- Los contactos se agregarán aquí dinámicamente -->
-            </tbody>
-        </table>
-        <!-- Formulario de edición -->
-        <form id="editForm" style="display: none;">
-            <input type="text" id="editNombre" placeholder="Nombre" required>
-            <input type="text" id="editTelefono" placeholder="Teléfono" required pattern="[0-9]{9,11}" maxlength="11">
-            <input type="email" id="editEmail" placeholder="Correo Electrónico" required>
-            <textarea id="editNotas" placeholder="Notas"></textarea>
-            <select id="editCategoria" required>
-                <option value="Trabajo">Trabajo</option>
-                <option value="Amigos">Amigos</option>
-                <option value="Familia">Familia</option>
-                <option value="Sin Categoría">Sin Categoría</option>
-                <option value="Otra">Otra</option>
-            </select>
-            <button type="submit" id="saveEditButton" class="primary-button">Actualizar Contacto</button>
-        </form>
 
-        <!-- Navegación hacia la página de agregar contacto -->
-        <div class="navigation">
-            <button id="logoutButton" class="secondary-button">Cerrar Sesión</button>
-            <a href="add-contact.html" class="secondary-button">Agregar Nuevo Contacto</a>
-            <button id="importGoogleContacts" class="secondary-button">
-                Importar Contactos de Google
-            </button>
+    <!-- Global Feedback Container for uiHelper.js -->
+    <div id="global-feedback" class="feedback-container-stack"></div>
+
+    <div class="main-container">
+        <div class="content-card content-card-lg">
+            <h1 class="mb-4">Lista de Contactos</h1>
+
+            <!-- Filtros y Acciones Principales -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="filters-group d-flex flex-wrap gap-3 mb-3 me-3">
+                    <div class="form-group">
+                        <label for="searchInput" class="form-label visually-hidden">Buscar contactos</label>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar contactos...">
+                    </div>
+                    <div class="form-group">
+                        <label for="filtroCategoria" class="form-label visually-hidden">Filtrar por categoría</label>
+                        <select id="filtroCategoria" class="form-control">
+                            <option value="">Todas las categorías</option>
+                            <!-- Categorías se cargarán dinámicamente por categoryManager.js -->
+                        </select>
+                    </div>
+                </div>
+                <div class="actions-group d-flex flex-wrap gap-2 mb-3">
+                    <button id="downloadCsvButton" class="btn btn-success">Descargar CSV</button>
+                    <a href="add-contact.html" class="btn btn-primary">Agregar Contacto</a>
+                    <button id="importGoogleContacts" class="btn btn-secondary">Importar de Google</button>
+                </div>
+            </div>
+
+            <!-- Tabla de Contactos -->
+            <div class="table-responsive">
+                <table id="contactList" class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Categoría</th>
+                            <th>Notas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactsTableBody">
+                        <!-- Los contactos se agregarán aquí dinámicamente por viewContacts.js -->
+                        <tr>
+                            <td colspan="6" class="text-center p-5">Cargando contactos1...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Formulario de Edición (Modal o sección oculta, gestionado por JS) -->
+        <div class="content-card mt-4" id="editFormContainer" style="display: none;">
+            <h2 class="mb-3">Editar Contacto</h2>
+            <form id="editForm">
+                <input type="hidden" id="editContactId"> <!-- Para guardar el ID del contacto a editar -->
+                <div class="form-group">
+                    <label for="editNombre">Nombre</label>
+                    <input type="text" id="editNombre" class="form-control" placeholder="Nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTelefono">Teléfono</label>
+                    <input type="tel" id="editTelefono" class="form-control" placeholder="Teléfono" required pattern="[0-9]{9,15}" maxlength="15">
+                </div>
+                <div class="form-group">
+                    <label for="editEmail">Correo Electrónico</label>
+                    <input type="email" id="editEmail" class="form-control" placeholder="Correo Electrónico" required>
+                </div>
+                <div class="form-group">
+                    <label for="editNotas">Notas</label>
+                    <textarea id="editNotas" class="form-control" placeholder="Notas"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editCategoria">Categoría</label>
+                    <select id="editCategoria" class="form-control" required>
+                        <!-- Opciones cargadas por JS o estáticas si son fijas -->
+                         <option value="Trabajo">Trabajo</option>
+                         <option value="Amigos">Amigos</option>
+                         <option value="Familia">Familia</option>
+                         <option value="Sin Categoría">Sin Categoría</option>
+                         <option value="Otra">Otra</option>
+                    </select>
+                </div>
+                 <div class="form-group" id="editNuevaCategoriaGroup" style="display: none;"> <!-- Para "Otra" categoría -->
+                    <label for="editNuevaCategoria">Nombre de la Nueva Categoría</label>
+                    <input type="text" id="editNuevaCategoria" class="form-control" placeholder="Escribe el nombre de la nueva categoría">
+                </div>
+                <div class="button-group mt-4">
+                    <button type="submit" id="saveEditButton" class="btn btn-primary">Actualizar Contacto</button>
+                    <button type="button" id="cancelEditButton" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Cargar los archivos JavaScript -->
-    <script src="/js/categoryManager.js" defer></script> <!-- Para cargar categorías -->
-    <script src="/js/contactManager.js" defer></script> <!-- Para CRUD -->
-    <script src="/js/filterManager.js" defer></script> <!-- Para búsqueda -->
-    <script src="/js/uiHelper.js" defer></script> <!-- Para feedback y renderizado -->
-    <script src="/js/viewContacts.js" defer></script> <!-- Manejo específico de la vista de contactos -->
+    <script src="/js/uiHelper.js"></script> <!-- Load uiHelper FIRST, without defer -->
+    <script src="/js/categoryManager.js" defer></script>
+    <script src="/js/contactManager.js" defer></script>
+    <script src="/js/viewContacts.js" defer></script> <!-- Moved BEFORE filterManager.js -->
+    <script src="/js/filterManager.js" defer></script>
     <script src="/js/downloadManager.js" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
         const emailDisplay = document.getElementById('userEmailDisplay');
-        const navbarLogoutBtn = document.getElementById('navbarLogoutButton'); // Ensure this is the ID from HTML
+        const navbarLogoutBtn = document.getElementById('navbarLogoutButton');
 
         try {
             const authResponse = await fetch('/auth/isAuthenticated', { credentials: 'include' });
-
             if (authResponse.ok) {
                 const authData = await authResponse.json();
-
-                if (authData.authenticated) { 
-                    if (authData.user && authData.user.username) {
-                        if (emailDisplay) emailDisplay.textContent = authData.user.username;
+                if (authData.authenticated && authData.user && authData.user.username) {
+                    if (emailDisplay) emailDisplay.textContent = authData.user.username;
+                } else if (authData.authenticated) {
+                    const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
+                    if (userInfoResponse.ok) {
+                        const userInfo = await userInfoResponse.json();
+                        if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario Autenticado';
                     } else {
-                        const userInfoResponse = await fetch('/auth/userinfo', { credentials: 'include' });
-                        if (userInfoResponse.ok) {
-                            const userInfo = await userInfoResponse.json();
-                            if (emailDisplay) emailDisplay.textContent = userInfo.username || 'Usuario';
-                        } else {
-                            if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
-                        }
+                        if (emailDisplay) emailDisplay.textContent = 'Usuario (Info no disp.)';
                     }
                 } else {
                     if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                    // window.location.href = '/html/login.html'; // Consider redirecting
                 }
             } else {
-                if (emailDisplay) emailDisplay.textContent = 'Invitado';
+                if (emailDisplay) emailDisplay.textContent = 'Invitado (Error Auth)';
+                // window.location.href = '/html/login.html';
             }
         } catch (error) {
-            if (emailDisplay) emailDisplay.textContent = 'Error';
+            console.error('Error de autenticación:', error);
+            if (emailDisplay) emailDisplay.textContent = 'Error de Conexión';
+            // window.location.href = '/html/login.html';
         }
 
         if (navbarLogoutBtn) {

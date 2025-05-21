@@ -49,7 +49,13 @@ function renderContacts(contacts) {
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Eliminar';
         deleteButton.className = 'delete';
-        deleteButton.onclick = () => deleteContact(contact.id);
+        deleteButton.onclick = () => {
+            const actions = [
+                { text: 'Eliminar', callback: () => performDeleteContact(contact.id, 'global-feedback') },
+                { text: 'Cancelar', callback: () => {} }
+            ];
+            showFeedback('¿Estás seguro de que deseas eliminar este contacto?', 'confirmation', 'global-feedback', 0, actions);
+        };
         actionsCell.appendChild(deleteButton);
 
         row.appendChild(actionsCell);
@@ -58,10 +64,7 @@ function renderContacts(contacts) {
 }
 
 // Función para eliminar un contacto
-async function deleteContact(contactId) {
-   // const confirmDelete = confirm('¿Estás seguro de que deseas eliminar este contacto?');
-    //if (!confirmDelete) return;
-
+async function performDeleteContact(contactId, containerId = 'global-feedback') {
     try {
         const response = await fetch(`/contacts/${contactId}`, {
             method: 'DELETE',
@@ -69,15 +72,19 @@ async function deleteContact(contactId) {
         });
 
         if (response.ok) {
-            showFeedback('Contacto eliminado correctamente');
-            loadContacts(); // Recargar la lista de contactos
+            showFeedback('Contacto eliminado correctamente', 'success', containerId);
+            if (typeof loadContacts === 'function') {
+                loadContacts(true); // Pass true to suppress loadContacts' own feedback
+            } else {
+                console.warn('loadContacts function is not available to refresh the list.');
+            }
         } else {
-            const error = await response.json();
-            showFeedback(error.error || 'Error al eliminar contacto', false);
+            const errorData = await response.json().catch(() => ({ error: 'Error desconocido al eliminar.' }));
+            showFeedback(errorData.error || 'Error al eliminar contacto', 'error', containerId);
         }
     } catch (err) {
         console.error('Error al eliminar contacto:', err);
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        showFeedback(`Error de conexión: ${err.message}`, 'error', containerId);
     }
 }
 
@@ -120,7 +127,14 @@ function toggleEditMode(row, contactId) {
 
             // Guardar los cambios
             document.querySelector('#saveEditButton').onclick = () => {
-                saveEdits(contactId);
+                const updatedContactData = {
+                    nombre: document.querySelector('#editNombre').value,
+                    telefono: document.querySelector('#editTelefono').value,
+                    email: document.querySelector('#editEmail').value,
+                    notas: document.querySelector('#editNotas').value,
+                    categoria: document.querySelector('#editCategoria').value,
+                };
+                saveEdits(contactId, updatedContactData);
             };
         })
         .catch(error => {
@@ -129,15 +143,7 @@ function toggleEditMode(row, contactId) {
 }
 
 // Función para guardar los cambios en el contacto después de editar
-async function saveEdits(contactId) {
-    const updatedContact = {
-        nombre: document.querySelector('#editNombre').value,
-        telefono: document.querySelector('#editTelefono').value,
-        email: document.querySelector('#editEmail').value,
-        notas: document.querySelector('#editNotas').value,
-        categoria: document.querySelector('#editCategoria').value,
-    };
-
+async function saveEdits(contactId, updatedContactData, containerId = 'global-feedback') {
     try {
         const response = await fetch(`/contacts/${contactId}`, {
             method: 'PUT',
@@ -145,34 +151,144 @@ async function saveEdits(contactId) {
                 'Content-Type': 'application/json'
             },
             credentials: 'include', // Incluir cookies en la solicitud
-            body: JSON.stringify(updatedContact),
+            body: JSON.stringify(updatedContactData),
         });
 
         if (response.ok) {
-            showFeedback('Contacto actualizado correctamente');
-            loadContacts(); // Recargar la lista de contactos
-            document.querySelector('#editForm').style.display = 'none'; // Ocultar el formulario de edición
+            showFeedback('Contacto actualizado correctamente', 'success', containerId);
+            const editFormContainer = document.getElementById('editFormContainer');
+            if (editFormContainer) {
+                editFormContainer.style.display = 'none'; // Hide the form
+            } else {
+                console.error('[uiHelper.js] editFormContainer not found when trying to hide after save.');
+            }
+            if (typeof loadContacts === 'function') {
+                loadContacts(true); // Pass true to suppress loadContacts' own feedback
+            } else {
+                console.warn('loadContacts function is not available to refresh the list.');
+            }
         } else {
-            const error = await response.json();
-            showFeedback(error.error || 'Error al actualizar contacto', false);
+            const errorData = await response.json().catch(() => ({ message: 'Error desconocido al guardar' }));
+            showFeedback(errorData.message || 'Error al actualizar contacto', 'error', containerId);
         }
     } catch (err) {
         console.error('Error al actualizar contacto:', err);
-        showFeedback(`Error de conexión: ${err.message}`, false);
+        showFeedback(`Error de conexión: ${err.message}`, 'error', containerId);
     }
 }
 
-// Función para mostrar feedback
-function showFeedback(message, success = true) {
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
+/**
+ * Muestra un mensaje de feedback al usuario.
+ * @param {string} message El mensaje a mostrar.
+ * @param {string} type Tipo de mensaje: 'info', 'success', 'error', 'warning', 'confirmation', 'loading'. Default 'info'.
+ * @param {string} containerId ID del contenedor donde se mostrará el feedback. Default 'global-feedback'.
+ * @param {number} duration Duración en ms antes de que el mensaje desaparezca. Si es 0 o si hay acciones, no desaparece automáticamente. Default 3000.
+ * @param {Array<Object>} actions Array de objetos de acción, ej: [{ text: 'OK', callback: () => {}, className: 'btn-primary' }]. Default null.
+ */
+function showFeedback(message, type = 'info', containerId = 'global-feedback', duration = 3000, actions = null) {
+    console.log('DEBUG: uiHelper.js showFeedback entered. Message:', message, 'Type:', type, 'ContainerID:', containerId);
+    const feedbackContainerStack = document.getElementById(containerId);
+    console.log('DEBUG: uiHelper.js feedbackContainerStack (getElementById result):', feedbackContainerStack);
+
+    if (!feedbackContainerStack) {
+        console.error(`Feedback container #${containerId} not found.`);
+        // Fallback to alert for critical feedback if container is missing
+        if (type === 'error' || type === 'warning') alert(message);
+        return null; // Return null or some indicator of failure
+    }
+
+    // Clear previous messages in the container for certain types to avoid stacking confirmations/loadings
+    if (type === 'confirmation' || type === 'loading' || (actions && actions.length > 0)) {
+        // If clearing all, ensure ongoing operations are considered (e.g. multiple load indicators)
+        // For now, simple clear for these types. A more robust system might tag messages.
+        feedbackContainerStack.innerHTML = ''; 
+    }
+
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = `feedback-message feedback-${type}`; // e.g., feedback-success, feedback-error
+    feedbackDiv.style.opacity = '0'; // Start transparent for fade-in
+
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'feedback-text-content';
+
+    if (type === 'loading') {
+        messageSpan.textContent = message || 'Cargando...'; // Set text first
+        feedbackDiv.appendChild(messageSpan); // Append text span first
+
+        const spinner = document.createElement('div');
+        spinner.className = 'spinner'; 
+        feedbackDiv.appendChild(spinner); // Append spinner after text
+    } else {
+        messageSpan.textContent = message;
+        feedbackDiv.appendChild(messageSpan); // For other types, append text span as before
+    }
+
+    if (actions && actions.length > 0) {
+        const actionsContainer = document.createElement('div');
+        actionsContainer.className = 'feedback-actions'; 
+
+        actions.forEach(action => {
+            const button = document.createElement('button');
+            button.textContent = action.text;
+            // Ensure btn-sm is added if not already part of a more specific Bootstrap class set
+            let btnClass = action.className || 'btn-secondary';
+            if (!btnClass.includes('btn-sm') && !btnClass.includes('btn-lg')) {
+                btnClass += ' btn-sm';
+            }
+            button.className = `btn ${btnClass}`;
+            
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event from bubbling up, if necessary
+                // Remove this specific feedbackDiv after action
+                feedbackDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (feedbackContainerStack.contains(feedbackDiv)) {
+                        feedbackContainerStack.removeChild(feedbackDiv);
+                    }
+                    if (feedbackContainerStack.children.length === 0) {
+                        feedbackContainerStack.style.display = 'none';
+                    }
+                }, 300); // Match fade-out time
+
+                if (action.callback && typeof action.callback === 'function') {
+                    action.callback();
+                }
+            });
+            actionsContainer.appendChild(button);
+        });
+        feedbackDiv.appendChild(actionsContainer);
+        duration = 0; // Actions imply the message stays until interaction
+    }
+
+    feedbackContainerStack.appendChild(feedbackDiv);
+    if (window.getComputedStyle(feedbackContainerStack).display === 'none') {
+        feedbackContainerStack.style.display = 'flex'; // Or 'block', ensure it's visible
+    }
+    
+    // Force a reflow before adding class for transition to work correctly
+    void feedbackDiv.offsetWidth;
+
+    // Fade in
+    setTimeout(() => { feedbackDiv.style.opacity = '1'; }, 10); 
+
+    if (duration > 0) {
+        setTimeout(() => {
+            feedbackDiv.style.opacity = '0';
+            setTimeout(() => {
+                if (feedbackContainerStack.contains(feedbackDiv)) {
+                    feedbackContainerStack.removeChild(feedbackDiv);
+                }
+                if (feedbackContainerStack.children.length === 0) {
+                    feedbackContainerStack.style.display = 'none';
+                }
+            }, 500); 
+        }, duration);
+    }
+    return feedbackDiv; // Return the created element for potential further manipulation
 }
 
 // Función para verificar la sesión del usuario
-async function checkSession() {
+async function checkSession(containerId = 'global-feedback') {
     try {
         const response = await fetch('/auth/isAuthenticated', {
             credentials: 'include'
@@ -189,12 +305,13 @@ async function checkSession() {
         }
     } catch (error) {
         console.error('Error:', error);
+        // showFeedback('Error de sesión, redirigiendo...', false, containerId); // Optional feedback
         window.location.href = '/html/login.html';
     }
 }
 
 // Función para cargar datos del usuario
-async function loadUserData() {
+async function loadUserData(containerId = 'global-feedback') {
     try {
         const response = await fetch('/auth/user', {
             credentials: 'include'
@@ -205,15 +322,15 @@ async function loadUserData() {
         }
 
         const userData = await response.json();
-        displayUserData(userData);
+        // displayUserData(userData); // Assuming displayUserData is defined elsewhere or not needed here
     } catch (error) {
         console.error('Error:', error);
-        showFeedback('Error al cargar datos del usuario', false);
+        showFeedback('Error al cargar datos del usuario', false, containerId);
     }
 }
 
 // Función para actualizar datos del usuario
-async function updateUserData(userData) {
+async function updateUserData(userData, containerId = 'global-feedback') {
     try {
         const response = await fetch('/auth/user', {
             method: 'PUT',
@@ -226,10 +343,10 @@ async function updateUserData(userData) {
             throw new Error('Error al actualizar datos del usuario');
         }
 
-        showFeedback('Datos actualizados exitosamente');
+        showFeedback('Datos actualizados exitosamente', true, containerId);
     } catch (error) {
         console.error('Error:', error);
-        showFeedback('Error al actualizar datos del usuario', false);
+        showFeedback('Error al actualizar datos del usuario', false, containerId);
     }
 
     document.addEventListener('initializeImport', () => {

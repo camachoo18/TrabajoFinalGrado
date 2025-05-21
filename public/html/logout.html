@@ -4,49 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cerrar Sesión</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
-
-        .feedback-container {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-
-        .feedback-message {
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-<script>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body class="logout-page-body">
+    <script>
     window.onload = async function() {
+        const feedbackCard = document.getElementById('logout-feedback-card');
+        const feedbackTextElement = document.getElementById('logout-feedback-text');
+
+        // Animate in the feedback card
+        if (feedbackCard) {
+            feedbackCard.style.display = 'flex'; // Make it part of the layout
+            void feedbackCard.offsetWidth; // Force reflow
+            // Trigger animation by adding .active class
+            feedbackCard.classList.add('active'); 
+            // The .active class now controls opacity and transform via CSS transitions
+        }
+
         try {
            // console.log('Enviando solicitud de logout al servidor...'); // Depuración
             const response = await fetch('/auth/logout', {
@@ -63,21 +37,21 @@
             }
     
            // console.log('Sesión cerrada exitosamente'); // Depuración
-            document.getElementById('feedback-message').innerText = "Sesión cerrada exitosamente. Redirigiendo...";
+            if (feedbackTextElement) feedbackTextElement.innerText = "Sesión cerrada exitosamente. Redirigiendo...";
     
             setTimeout(function() {
                 window.location.href = '/html/login.html';
             }, 2000);
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
-            document.getElementById('feedback-message').innerText = "Error al cerrar sesión. Inténtalo nuevamente.";
+            if (feedbackTextElement) feedbackTextElement.innerText = "Error al cerrar sesión. Inténtalo nuevamente.";
+            // Optionally, you could animate out here too if it didn't redirect, but redirection is typical.
         }
     };
     </script>
-</head>
-<body>
-    <div class="feedback-container">
-        <div class="feedback-message" id="feedback-message">Cerrando sesión...</div>
+    <!-- The body is already styled by .logout-page-body to center its content -->
+    <div class="feedback-message feedback-loading feedback-card-centered" id="logout-feedback-card" style="display: none;">
+        <div id="logout-feedback-text">Cerrando sesión...</div>
         <div class="spinner"></div>
     </div>
 </body>

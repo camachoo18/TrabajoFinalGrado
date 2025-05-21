@@ -23,11 +23,21 @@ async function handleLogin(event) {
     const username = document.getElementById('loginUsername').value;
     const password = document.getElementById('loginPassword').value;
 
-    // Mostrar la animación de feedback
-    const feedbackContainer = document.getElementById('login-feedback');
-    const feedbackMessage = document.getElementById('login-feedback-message');
-    feedbackContainer.style.display = 'block';
-    feedbackMessage.textContent = 'Iniciando sesión...';
+    // Updated feedback element targeting
+    const feedbackCard = document.getElementById('login-feedback-card');
+    const feedbackTextElement = document.getElementById('login-feedback-text');
+    
+    if (feedbackCard && feedbackTextElement) {
+        feedbackTextElement.textContent = 'Iniciando sesión...'; // Set initial message
+        feedbackCard.style.display = 'flex'; // Make it part of the layout
+        // Force a reflow to ensure the transition takes place
+        void feedbackCard.offsetWidth;
+        // Trigger animation by adding .active class
+        feedbackCard.classList.add('active');
+    } else {
+        console.error('Login feedback elements not found!');
+        return; // Stop if elements are missing
+    }
 
     try {
         const response = await fetch('/auth/login', {
@@ -39,20 +49,28 @@ async function handleLogin(event) {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || 'Error en el login');
+            if (feedbackTextElement) feedbackTextElement.textContent = error.error || 'Error en el login';
+            throw new Error(error.error || 'Error en el login'); // Throw after setting message
         }
 
-        // Redirigir al usuario a la página principal después del inicio de sesión
-        feedbackMessage.textContent = 'Inicio de sesión exitoso. Redirigiendo...';
+        if (feedbackTextElement) feedbackTextElement.textContent = 'Inicio de sesión exitoso. Redirigiendo...';
         setTimeout(() => {
             window.location.href = '/index.html';
-        }, 2000); // Esperar 2 segundos antes de redirigir
+        }, 2000);
     } catch (error) {
         console.error('Error en el login:', error);
-        feedbackMessage.textContent = 'Error al iniciar sesión. Inténtalo nuevamente.';
-        setTimeout(() => {
-            feedbackContainer.style.display = 'none'; // Ocultar el feedback después de 2 segundos
-        }, 2000);
+        // The error message is already set if it came from !response.ok
+        // If it's another type of error, set a generic one:
+        if (feedbackTextElement && feedbackTextElement.textContent === 'Iniciando sesión...') {
+             feedbackTextElement.textContent = 'Error al iniciar sesión. Inténtalo nuevamente.';
+        }
+        // Animate out on error
+        if (feedbackCard) {
+            feedbackCard.classList.remove('active'); // Animate out
+            setTimeout(() => {
+                feedbackCard.style.display = 'none'; // Hide after animation
+            }, 300); // Match transition duration (0.3s)
+        }
     }
 }
 
@@ -157,15 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
-// Función para mostrar feedback
-function showFeedback(message, success = true) {
-    const feedback = document.createElement('div');
-    feedback.textContent = message;
-    feedback.className = success ? 'feedback success' : 'feedback error';
-    document.body.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 3000); // Eliminar feedback después de 3 segundos
-}
 
 // Función para mostrar feedback visual con animación
 function showVisualFeedback(message, success = true) {

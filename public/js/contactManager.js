@@ -126,7 +126,7 @@ function renderContacts(contacts) {
     });
 }
 
-// Manejar el evento submit del formulario de agregar contacto
+/*
 document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -164,6 +164,7 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
         showFeedback(`Error de conexión: ${err.message}`, false);
     }
 });
+*/
 
 document.getElementById('editForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -193,7 +194,7 @@ document.getElementById('editForm')?.addEventListener('submit', async (e) => {
 
         if (response.ok) {
             loadContacts(); // Recargar la lista de contactos
-            showFeedback('Contacto actualizado correctamente'); // Mostrar mensaje de éxito
+            //showFeedback('Contacto actualizado correctamente'); // Mostrar mensaje de éxito
 
             const editForm = document.getElementById('editForm');
             if (editForm) {
