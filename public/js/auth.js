@@ -80,20 +80,20 @@ async function handleRegister(event) {
     const username = document.getElementById('registerUsername').value;
     const password = document.getElementById('registerPassword').value;
 
-    // Mostrar la animación de feedback
-    const feedbackContainer = document.createElement('div');
-    feedbackContainer.className = 'feedback-container';
+    const feedbackCard = document.getElementById('register-feedback-card');
+    const feedbackTextElement = document.getElementById('register-feedback-text');
 
-    const feedbackMessage = document.createElement('div');
-    feedbackMessage.className = 'feedback-message';
-    feedbackMessage.textContent = 'Registrando usuario...';
-
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner';
-
-    feedbackContainer.appendChild(feedbackMessage);
-    feedbackContainer.appendChild(spinner);
-    document.body.appendChild(feedbackContainer);
+    if (feedbackCard && feedbackTextElement) {
+        feedbackTextElement.textContent = 'Registrando usuario...';
+        feedbackCard.style.display = 'flex'; // Make it visible and part of layout
+        void feedbackCard.offsetWidth; // Force reflow for animation
+        feedbackCard.classList.add('active');
+    } else {
+        console.error('Register feedback elements not found!');
+        // Fallback or simple alert if main feedback UI is not present
+        alert('Procesando registro...'); 
+        return; // Stop if critical elements are missing
+    }
 
     try {
         const response = await fetch('/auth/register', {
@@ -103,26 +103,34 @@ async function handleRegister(event) {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Error en el registro');
+            const error = await response.json().catch(() => ({ error: 'Error desconocido durante el registro.' }));
+            if (feedbackTextElement) feedbackTextElement.textContent = error.error || 'Error en el registro.';
+            // Keep the card visible to show the error
+            // No automatic redirection or hiding on server-side error, user might need to see the message
+            // Consider adding a close button or timeout for error messages if desired
+            return; // Stop execution if registration failed
         }
 
-        // Actualizar el mensaje de feedback
-        feedbackMessage.textContent = 'Registro exitoso. Redirigiendo...';
-
-        // Redirigir al usuario a la página de login después de 2 segundos
+        // Registro exitoso
+        if (feedbackTextElement) feedbackTextElement.textContent = 'Usuario registrado correctamente. Redirigiendo...';
+        
         setTimeout(() => {
-            feedbackContainer.remove();
-            window.location.href = '/html/login.html';
-        }, 2000);
+            window.location.href = '/html/login.html'; // Redirigir a la página de login
+        }, 2500); // Wait 2.5 seconds before redirecting
+
     } catch (error) {
         console.error('Error en el registro:', error);
-
-        // Mostrar mensaje de error en el feedback
-        feedbackMessage.textContent = 'Error al registrarse. Inténtalo nuevamente.';
-        setTimeout(() => {
-            feedbackContainer.remove();
-        }, 2000);
+        if (feedbackTextElement) {
+            feedbackTextElement.textContent = 'Error de conexión o al procesar el registro. Inténtalo nuevamente.';
+        }
+        // On network or other unexpected errors, ensure the card is visible to show the message.
+        // If it was already active, it remains. If not (e.g. error before fetch), this ensures it's shown.
+        if (feedbackCard && !feedbackCard.classList.contains('active')) {
+            feedbackCard.style.display = 'flex';
+            void feedbackCard.offsetWidth;
+            feedbackCard.classList.add('active');
+        }
+        // Do not automatically hide the card on error, so the user can read it.
     }
 }
 
@@ -195,7 +203,8 @@ function showVisualFeedback(message, success = true) {
     setTimeout(() => {
         feedbackContainer.remove();
         if (success) {
-            window.location.href = '/html/index.html'; // Redirigir a la página principal después de 2 segundos
+            // Adjusted redirection to login.html as per new registration flow
+            window.location.href = '/html/login.html'; 
         }
     }, 2000); // 2 segundos de espera para mostrar el feedback
 }

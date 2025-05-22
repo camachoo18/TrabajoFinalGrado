@@ -39,12 +39,13 @@
         </div>
     </div>
 
-    <!-- Feedback container for registration -->
-    <div class="feedback-container" id="register-feedback" style="display: none;"> <!-- Initially hidden -->
-        <div class="feedback-message" id="register-feedback-message">Registrando usuario...</div>
+    <!-- Updated Feedback card for registration to match login/logout style -->
+    <div class="feedback-message feedback-loading feedback-card-centered" id="register-feedback-card" style="display: none;">
+        <div id="register-feedback-text">Registrando usuario...</div>
         <div class="spinner"></div>
     </div>
 
     <script src="/js/auth.js"></script>
+    <script src="/js/uiHelper.js"></script> <!-- Include uiHelper for showFeedback if needed elsewhere, though auth.js handles this one -->
 </body>
 </html>

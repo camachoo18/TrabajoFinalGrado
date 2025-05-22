@@ -677,3 +677,72 @@ body.logout-page-body {
         margin-top: 0.5rem; /* Add space between stacked buttons */
     }
 }
+
+/* === HOME PAGE SPECIFIC STYLES === */
+#welcome-card {
+    padding: 2.5rem 2rem; /* More vertical padding for emphasis */
+    margin-top: 5vh; /* Push down from the top for better centering feel */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Slightly more pronounced shadow */
+}
+
+#welcome-card h1 {
+    font-size: 2.5rem; /* Larger title */
+    color: var(--primary-darker);
+    margin-bottom: 0.75rem;
+}
+
+.welcome-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2.5rem; /* More space before action buttons */
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.welcome-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem; /* Space between buttons */
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+}
+
+.welcome-actions .btn {
+    min-width: 180px; /* Ensure buttons have a good clickable area */
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+
+/* Responsive adjustments for the welcome page */
+@media (max-width: 768px) {
+    #welcome-card h1 {
+        font-size: 2.2rem;
+    }
+    .welcome-subtitle {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #welcome-card {
+        padding: 2rem 1.5rem;
+        margin-top: 3vh;
+    }
+    #welcome-card h1 {
+        font-size: 1.8rem; /* Adjust title size for smaller screens */
+    }
+    .welcome-subtitle {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+    .welcome-actions {
+        flex-direction: column; /* Stack buttons vertically on very small screens */
+        gap: 1rem;
+    }
+    .welcome-actions .btn {
+        width: 100%; /* Make buttons full width when stacked */
+        min-width: unset; /* Reset min-width */
+    }
+}
