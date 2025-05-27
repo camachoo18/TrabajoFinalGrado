@@ -746,3 +746,19 @@ body.logout-page-body {
         min-width: unset; /* Reset min-width */
     }
 }
+
+/* === FOOTER STYLES === */
+.site-footer {
+    background-color: var(--background-body, #E9ECEF); /* Lighter background, using existing var */
+    color: var(--text-secondary, #495057); /* Slightly darker text for better readability on lighter bg */
+    text-align: center;
+    padding: 1rem 1rem; /* Slightly reduced padding */
+    margin-top: auto; /* Helps push footer to bottom in flex layouts */
+    font-size: 0.875rem; /* Slightly smaller font */
+    width: 100%;
+    border-top: 1px solid var(--border-color-light, #CED4DA); /* Lighter border */
+}
+
+.site-footer p {
+    margin: 0;
+}
